@@ -1,0 +1,184 @@
+.index {
+    display: flex;
+    background: linear-gradient(90deg, #E3F1FF 0%, #E5FFF9 100%);
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 65px 150px;
+        max-width: 1440px;
+}
+
+.indexContainer {
+    display: flex;
+    width: 100%;
+}
+
+.video {
+    background-color: black;
+    width: 310px;
+    height: 550px;
+    border-radius: 5px;
+}
+
+.indexContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 50px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.indexTitle {
+    color: #007CFF;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 146%;
+    display: flex;
+    gap: 16.5px;
+    align-items: flex-end;
+    padding-bottom: 65px;
+}
+
+.indexDescription {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-left: 40px;
+}
+
+.descriptionBox {
+    display: flex;
+    flex-direction: column;
+    border-radius: 100px 5px 5px 100px;
+    background: #E4F2FF;
+    width: 588px;
+    height: 186px;
+    justify-content: center;
+    box-sizing: border-box;
+    padding-left: 222px;
+}
+
+.descriptionImage {
+    width: 250px;
+    height: auto;
+    position: absolute;
+    top: 50%;
+    left: -25px;
+    transform: translateY(-50%);
+}
+
+.descriptionTitle {
+    color: #1B1D1F;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 146%;
+    box-sizing: border-box;
+    padding-bottom: 15px;
+
+}
+
+.descriptionContent {
+    color: #1B1D1F;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.cardRow {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+    justify-content: center;
+}
+
+.card {
+    border-radius: 5px;
+    background: linear-gradient(0deg, rgba(0, 123, 255, 0.20) 0%, rgba(0, 123, 255, 0.20) 100%), linear-gradient(136deg, #007BFF 4.71%, rgba(0, 15, 31, 0.00) 163.81%);
+    width: 237px;
+    height: 182px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-decoration: none;
+    position: relative;
+    padding: 19px 17px 19px 17px;
+    box-sizing: border-box;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    border-radius: 8px;
+    padding: 8px 0;
+}
+
+.cardTitle {
+    display: flex;
+    height: 28px;
+    padding: 0 5px;
+    justify-content: center;
+    align-items: center;
+    gap: 7.662px;
+    border-radius: 3px;
+    background-color: #fff;
+    color: #007BFF;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 146%;
+}
+
+.cardSubtitle {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 146%;
+    color: #FFF;
+}
+
+.cardList {
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4.414070129394531px);
+    padding: 7px 5px;
+}
+
+.cardList > li {
+    color: #FFF;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 146%;
+}
+
+.cardIcon {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    opacity: 0.9;
+}
+
+/* 카드 링크 영역 스타일 */
+.cardLinks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.cardLink {
+    display: inline-block;
+    background: #007CFF;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 24px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.cardLink:hover {
+    background: #005bb5;
+}
