@@ -1,28 +1,35 @@
+
+"use client";
+import React from "react";
+import { useTranslations } from "next-intl";
+
 import styles from "../styles/index.module.css";
 
 export default function IndexComponent() {
+  const t = useTranslations();
+
   // 카드 정보 배열
   const cards = [
     {
-      title: "관리자",
-      subtitle: "(일반형/공고형)",
-      items: ["지자체 관리자 전용", "가입 연장 해지 조회 가능"],
+      title: t("admin.title"),
+      subtitle: t("admin.subtitle"),
+      items: [t("admin.item1"), t("admin.item2")],
       icon: "/images/icon-admin.png",
       href: "/admin",
     },
     {
-      title: "개인 페이지",
-      subtitle: "(사업주/근로자)",
-      items: ["사업주/근로자 전용", "결제, 해지, 증권 출력 가능"],
+      title: t("personal.title"),
+      subtitle: t("personal.subtitle"),
+      items: [t("personal.item1"), t("personal.item2")],
       icon: "/images/icon-personal.png",
       href: "/personal",
     },
     {
-      title: "INMEDIC",
-      subtitle: "",
-      items: ["의료통역 병원 찾기 서비스", "서비스 이용 가이드"],
+      title: t("inmedic.title"),
+      subtitle: t("inmedic.subtitle"),
+      items: [t("inmedic.item1"), t("inmedic.item2")],
       icon: "/images/icon-inmedic.png",
-      href: "/inmedic",
+      href: "https://inmedic.co.kr/experience_service",
     },
   ];
 
@@ -80,7 +87,7 @@ export default function IndexComponent() {
                 fill="#007BFF"
               />
             </svg>
-            <h2>계절 근로자 구독 서비스</h2>
+            <h2>{t("계절근로자_구독_서비스")}</h2>
           </div>
           <div className={styles.indexDescription}>
             <img
@@ -90,13 +97,13 @@ export default function IndexComponent() {
             />
             <div className={styles.descriptionBox}>
               <span className={styles.descriptionTitle}>
-                외국인 계정 근로자 단체 상해보험
+                {t("외국인_계절근로자_단체_상해_보험")}
               </span>
               <p className={styles.descriptionContent}>
-                의료 통역부터 보험처리까지
+                {t("의료_통역부터_보험처리까지")}
               </p>
               <p className={styles.descriptionContent}>
-                쉽고 간편하게 제공합니다
+                {t("쉽고_간편하게_제공합니다")}
               </p>
             </div>
           </div>
@@ -118,7 +125,6 @@ export default function IndexComponent() {
                     <li key={i}>⦁ {item}</li>
                   ))}
                 </ul>
-                {/* 카드별 SVG 아이콘 */}
                 {idx === 0 && (
                   <svg xmlns="http://www.w3.org/2000/svg" width="95" height="97" viewBox="0 0 95 97" fill="none" className={styles.cardIcon}>
                     <path d="M44.0996 1.97318C47.5829 -0.657727 52.4245 -0.657727 55.9078 1.97318L97.2574 33.1576C102.524 37.1287 99.6991 45.416 93.0825 45.4489H6.9166C0.30833 45.416 -2.52498 37.1287 2.74997 33.1576L44.0996 1.97318ZM49.9995 31.0611C51.6571 31.0611 53.2468 30.4115 54.4189 29.2551C55.591 28.0987 56.2495 26.5303 56.2495 24.895C56.2495 23.2596 55.591 21.6912 54.4189 20.5348C53.2468 19.3784 51.6571 18.7288 49.9995 18.7288C48.342 18.7288 46.7523 19.3784 45.5802 20.5348C44.4081 21.6912 43.7496 23.2596 43.7496 24.895C43.7496 26.5303 44.4081 28.0987 45.5802 29.2551C46.7523 30.4115 48.342 31.0611 49.9995 31.0611ZM12.4999 53.6705V78.3352H24.9998V53.6705H12.4999ZM33.333 53.6705V78.3352H45.8329V53.6705H33.333ZM54.1662 53.6705V78.3352H66.6661V53.6705H54.1662ZM74.9993 53.6705V78.3352H87.4992V53.6705H74.9993ZM0 96.8338C0 91.1609 4.66662 86.5568 10.4166 86.5568H89.5825C95.3325 86.5568 99.9991 91.1609 99.9991 96.8338V98.8892C99.9991 99.9795 99.5601 101.025 98.7787 101.796C97.9973 102.567 96.9375 103 95.8325 103H4.16663C3.06157 103 2.00177 102.567 1.22038 101.796C0.438984 101.025 0 99.9795 0 98.8892V96.8338Z" fill="#F8FAFB"/>

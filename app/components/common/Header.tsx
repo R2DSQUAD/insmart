@@ -1,7 +1,34 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import styles from "../../styles/common/Header.module.css";
+import { useTranslations } from "next-intl";
 
 export default function Header() {
+        const t = useTranslations();
+        const router = useRouter();
+        const pathname = usePathname();
+        // 현재 쿼리스트링에서 lang 파라미터 추출
+        const getLangFromSearch = () => {
+            if (typeof window !== "undefined") {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("lang") || "ko";
+            }
+            return "ko";
+        };
+        const currentLang = getLangFromSearch();
+
+            const changeLanguage = (lang: "en" | "ko" | "ja") => {
+                if (typeof window !== "undefined") {
+                    if (lang === "ko") {
+                        window.location.href = "/";
+                    } else {
+                        window.location.href = `/?lang=${lang}`;
+                    }
+                }
+            };
+
     return (
         <header className={styles.header}>
             <div className={styles.headerContainer}>
@@ -34,10 +61,16 @@ export default function Header() {
                             </svg>
                             <span>Language</span>
                         </label>
-                        <select id="language-select" name="language" className={styles.languageSelect}>
+                        <select
+                            id="language-select"
+                            name="language"
+                            className={styles.languageSelect}
+                            value={currentLang}
+                            onChange={(e) => changeLanguage(e.target.value as "en" | "ko" | "ja")}
+                        >
                             <option value="ko">한국어</option>
                             <option value="en">English</option>
-                            <option value="jp">日本語</option>
+                            <option value="ja">日本語</option>
                         </select>
                     </div>
                 </nav>

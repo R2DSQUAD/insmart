@@ -1,3 +1,4 @@
+"use client";
 
 import IndexComponent from "./components/index";
 

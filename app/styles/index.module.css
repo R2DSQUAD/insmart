@@ -5,12 +5,12 @@
     width: 100%;
     box-sizing: border-box;
     padding: 65px 150px;
-        max-width: 1440px;
 }
 
 .indexContainer {
     display: flex;
     width: 100%;
+    justify-content: center;
 }
 
 .video {
@@ -93,8 +93,8 @@
 }
 
 .card {
-    border-radius: 5px;
-    background: linear-gradient(0deg, rgba(0, 123, 255, 0.20) 0%, rgba(0, 123, 255, 0.20) 100%), linear-gradient(136deg, #007BFF 4.71%, rgba(0, 15, 31, 0.00) 163.81%);
+ border-radius: 5px;
+background: linear-gradient(0deg, rgba(0, 123, 255, 0.20) 0%, rgba(0, 123, 255, 0.20) 100%), linear-gradient(136deg, #007BFF 4.71%, rgba(0, 15, 31, 0.00) 163.81%);
     width: 237px;
     height: 182px;
     display: flex;
