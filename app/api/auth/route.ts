@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     return NextResponse.json({ success: false, error: '잘못된 JSON 형식' }, { status: 400 });
   }
-  const { type, region, local_government, pinCode, name, passportNo, birth, phone, smsCode } = body || {};
+  const { type, region, local_government, pinCode, name, passportNo, birth, phone, smsCode, step } = body || {};
   const dataSource = await initializeDataSource();
 
   if (type === 'public') {
@@ -126,9 +126,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, user, group: 'general' });
   }
   if (type === 'seasonWorker') {
-    // 계절노동자: region, local_government, pinCode, 여권이름, 여권번호, 생년월일(YYMMDD)
+    const repo = dataSource.getRepository(SeasonWorker);
+    
+    // 1차 인증: region, local_government, pinCode만으로 계정 존재 확인
+    if (step === 1) {
+      if (!region || !local_government || !pinCode) {
+        return NextResponse.json({ success: false, error: '필수 정보 누락 (1차)' }, { status: 400 });
+      }
+      
+      const user = await repo
+        .createQueryBuilder('worker')
+        .innerJoin('worker.publicManager', 'manager')
+        .innerJoin('manager.localGovernments', 'lg')
+        .where('lg.region_name = :region', { region })
+        .andWhere('lg.local_government_name = :local_government', { local_government })
+        .andWhere('worker.password = :pinCode', { pinCode })
+        .getOne();
+      
+      if (!user) return NextResponse.json({ success: false, error: '계정 정보가 올바르지 않습니다' }, { status: 401 });
+      return NextResponse.json({ success: true, message: '1차 인증 성공' });
+    }
+    
+    // 2차 인증: 추가 정보(이름, 여권번호, 생년월일)로 최종 인증
     if (!region || !local_government || !pinCode || !name || !passportNo || !birth) {
-      return NextResponse.json({ success: false, error: '필수 정보 누락' }, { status: 400 });
+      return NextResponse.json({ success: false, error: '필수 정보 누락 (2차)' }, { status: 400 });
     }
     
     // YYMMDD 형식 검증
@@ -136,13 +157,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '생년월일 형식 오류 (YYMMDD)' }, { status: 400 });
     }
     
-    const repo = dataSource.getRepository(SeasonWorker);
-    // DB의 birth_date(YYYY-MM-DD)에서 -를 제거한 뒤 뒤 6자리(YYMMDD)와 비교
-    // local_government 테이블과 조인하여 region, local_government도 검증
     const user = await repo
-  .createQueryBuilder('worker')
-  .innerJoin('worker.publicManager', 'manager')
-  .innerJoin('manager.localGovernments', 'lg')
+      .createQueryBuilder('worker')
+      .innerJoin('worker.publicManager', 'manager')
+      .innerJoin('manager.localGovernments', 'lg')
       .where('lg.region_name = :region', { region })
       .andWhere('lg.local_government_name = :local_government', { local_government })
       .andWhere('worker.password = :pinCode', { pinCode })
@@ -151,20 +169,39 @@ export async function POST(request: NextRequest) {
       .andWhere('RIGHT(REPLACE(worker.birth_date, "-", ""), 6) = :birth', { birth })
       .getOne();
     
-    if (!user) return NextResponse.json({ success: false, error: '인증 실패' }, { status: 401 });
+    if (!user) return NextResponse.json({ success: false, error: '본인 인증에 실패했습니다' }, { status: 401 });
     return NextResponse.json({ success: true, user, group: 'seasonWorker' });
   }
   if (type === 'employer') {
-    // 사업주: region, local_government, pinCode, 사업주이름, 전화번호 (문자인증코드는 주석처리)
-    if (!region || !local_government || !pinCode || !name || !phone) {
-      return NextResponse.json({ success: false, error: '필수 정보 누락' }, { status: 400 });
+    const repo = dataSource.getRepository(Employer);
+    
+    // 1차 인증: region, local_government, pinCode만으로 계정 존재 확인
+    if (step === 1) {
+      if (!region || !local_government || !pinCode) {
+        return NextResponse.json({ success: false, error: '필수 정보 누락 (1차)' }, { status: 400 });
+      }
+      
+      const user = await repo
+        .createQueryBuilder('employer')
+        .innerJoin('employer.generalManager', 'managerG')
+        .innerJoin('managerG.localGovernments', 'lgG')
+        .where('lgG.region_name = :region', { region })
+        .andWhere('lgG.local_government_name = :local_government', { local_government })
+        .andWhere('employer.password = :pinCode', { pinCode })
+        .getOne();
+      
+      if (!user) return NextResponse.json({ success: false, error: '계정 정보가 올바르지 않습니다' }, { status: 401 });
+      return NextResponse.json({ success: true, message: '1차 인증 성공' });
     }
     
-    const repo = dataSource.getRepository(Employer);
-    // local_government 테이블과 조인하여 region, local_government도 검증
+    // 2차 인증: 추가 정보(사업주이름, 전화번호)로 최종 인증
+    if (!region || !local_government || !pinCode || !name || !phone) {
+      return NextResponse.json({ success: false, error: '필수 정보 누락 (2차)' }, { status: 400 });
+    }
+    
     const user = await repo
-  .createQueryBuilder('employer')
-  .innerJoin('employer.generalManager', 'managerG')
+      .createQueryBuilder('employer')
+      .innerJoin('employer.generalManager', 'managerG')
       .innerJoin('managerG.localGovernments', 'lgG')
       .where('lgG.region_name = :region', { region })
       .andWhere('lgG.local_government_name = :local_government', { local_government })
@@ -173,7 +210,7 @@ export async function POST(request: NextRequest) {
       .andWhere('employer.phone = :phone', { phone })
       .getOne();
     
-    if (!user) return NextResponse.json({ success: false, error: '인증 실패' }, { status: 401 });
+    if (!user) return NextResponse.json({ success: false, error: '본인 인증에 실패했습니다' }, { status: 401 });
     // TODO: smsCode 검증 로직 추가 필요
     // if (smsCode !== expectedCode) {
     //   return NextResponse.json({ success: false, error: 'SMS 인증 실패' }, { status: 401 });

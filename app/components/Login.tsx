@@ -17,7 +17,7 @@ export default function Login() {
   const [phone, setPhone] = useState("");
   const [smsCode, setSmsCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1: 기본, 2: 추가정보
+  const [step, setStep] = useState(1); // userLogin만 2단계
   const pathname = usePathname();
   // userType 옵션 결정
   let userTypeOptions: { value: string; label: string }[] = [];
@@ -61,14 +61,15 @@ export default function Login() {
   const regionName = regions.find(r => String(r.region_id) === selectedRegion)?.region_name || "";
   const localGovName = localGovernments.find(lg => String(lg.local_government_id) === selectedLocalGov)?.local_government_name || "";
 
-  // 2단계 인증 핸들러
+  // 2단계 인증 핸들러 (2차 인증)
   const handleAuth = async () => {
     setLoading(true);
     let body: any = {
       type: userType,
       region: regionName,
       local_government: localGovName,
-      pinCode: pin
+      pinCode: pin,
+      step: 2  // 2차 인증임을 명시
     };
     if (userType === "seasonWorker") {
       body.name = passportName;
@@ -98,14 +99,13 @@ export default function Login() {
     }
   };
 
-  // 1단계 → 2단계로
-  const handleNext = () => {
-    setStep(2);
-  };
+
 
   return (
     <>
       <h1>통합 로그인 테스트</h1>
+      {/* 모든 로그인에서 2단계 인증 적용 */}
+      {/* adminLogin은 핀번호 인증만, userLogin은 2단계 */}
       {step === 1 && (
         <>
           <div>
@@ -136,7 +136,6 @@ export default function Login() {
             value={selectedLocalGov}
             onChange={e => {
               setSelectedLocalGov(e.target.value);
-              // 자치단체 선택 시 해당 자치단체의 region_id로 행정구역 자동 선택
               const lg = localGovernments.find(lg => String(lg.local_government_id) === e.target.value);
               if (lg) setSelectedRegion(String(lg.region_id));
             }}
@@ -156,19 +155,52 @@ export default function Login() {
             style={{ marginLeft: 8 }}
           />
           <button
-            onClick={handleNext}
-            disabled={
-              !selectedRegion || !selectedLocalGov || !pin || loading
-            }
+            onClick={async () => {
+              setLoading(true);
+              const body: any = {
+                type: userType,
+                region: regionName,
+                local_government: localGovName,
+                pinCode: pin
+              };
+              
+              // userLogin일 경우 1차 인증임을 명시
+              if (pathname === "/userLogin") {
+                body.step = 1;
+              }
+              
+              try {
+                const res = await fetch("/api/auth", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.success) {
+                  if (pathname === "/adminLogin") {
+                    alert("로그인 성공");
+                  } else if (pathname === "/userLogin") {
+                    setStep(2);
+                  }
+                } else {
+                  alert(`인증 실패: ${data.error || data.error_context || data.message || "알 수 없는 오류"}`);
+                }
+              } catch (e) {
+                alert("네트워크 오류");
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={!selectedRegion || !selectedLocalGov || !pin || loading}
             style={{ marginLeft: 8 }}
           >
-            다음
+            핀번호 인증
           </button>
         </>
       )}
-      {step === 2 && (
+      {/* userLogin만 2차 인증 */}
+      {step === 2 && pathname === "/userLogin" && (
         <>
-          {/* 추가 정보 입력: seasonWorker, employer만 */}
           {userType === "seasonWorker" && (
             <>
               <input
@@ -226,7 +258,7 @@ export default function Login() {
             }
             style={{ marginLeft: 8 }}
           >
-            인증
+            Login
           </button>
         </>
       )}
