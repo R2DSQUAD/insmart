@@ -8,28 +8,34 @@ import { SeasonWorker, Gender, RegisterStatus } from '@/lib/entity/SeasonWorker'
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 import { Region } from '@/lib/entity/Region';
 import { Country } from '@/lib/entity/Country';
+import { Payment } from '@/lib/entity/Payment';
+import { VisaStatus } from '@/lib/entity/VisaStatus';
+import { Insurance } from '@/lib/entity/Insurance';
+import { BankAccount } from '@/lib/entity/BankAccount';
+import { CreditCard } from '@/lib/entity/CreditCard';
+import { ErrorCode } from '@/lib/entity/ErrorCode';
 
 export function OPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    },
-  });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
  * @swagger
+ * tags:
+ *   - name: DummyData
+ *     description: 더미데이터 관리 API
  * /api/seed:
  *   post:
+ *     tags:
+ *       - DummyData
  *     summary: 더미 데이터 생성
  *     description: 테스트용 더미 데이터를 생성합니다 (관리자 3명, 매니저 10명, 사업자 5개, 노동자 35명)
  *     responses:
  *       201:
  *         description: 생성 성공
  *   delete:
+ *     tags:
+ *       - DummyData
  *     summary: 더미 데이터 삭제
  *     description: 모든 더미 데이터를 삭제합니다 (개발용)
  *     responses:
@@ -56,8 +62,9 @@ export async function POST() {
       { region_name: '제주특별자치도' }
     ]);
 
-    // 2. Country 데이터 생성
+    // 2. Country 데이터 생성 (중복 방지: 테이블 비우기)
     const countryRepo = dataSource.getRepository(Country);
+    await countryRepo.clear();
     const countries = await countryRepo.save([
       { country_code: 'VNM', country_name: '베트남' },
       { country_code: 'THA', country_name: '태국' },
@@ -79,29 +86,48 @@ export async function POST() {
       { password: 'admin1234', name: '박관리' }
     ]);
 
-    // 4. LocalManagerPublic 데이터 생성
+    // 4. LocalManagerPublic 데이터 생성 (테스트용: region/local_government/pinCode 조합)
     const publicManagerRepo = dataSource.getRepository(LocalManagerPublic);
     const publicManagers = await publicManagerRepo.save([
       { admin_id: admins[0].admin_id, password: 'public1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[0].admin_id, password: 'public1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[1].admin_id, password: 'public1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[1].admin_id, password: 'public1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[2].admin_id, password: 'public1234', account_status: AccountStatus.ACTIVE }
+      { admin_id: admins[1].admin_id, password: 'public5678', account_status: AccountStatus.ACTIVE },
+      { admin_id: admins[2].admin_id, password: 'public9999', account_status: AccountStatus.ACTIVE },
+      { admin_id: admins[0].admin_id, password: 'public0000', account_status: AccountStatus.ACTIVE },
+      { admin_id: admins[1].admin_id, password: 'public5555', account_status: AccountStatus.ACTIVE }
     ]);
 
-    // 5. LocalManagerGeneral 데이터 생성
+    // 5. LocalManagerGeneral 데이터 생성 (테스트용: region/local_government/pinCode 조합)
     const generalManagerRepo = dataSource.getRepository(LocalManagerGeneral);
     const generalManagers = await generalManagerRepo.save([
       { admin_id: admins[0].admin_id, password: 'general1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[0].admin_id, password: 'general1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[1].admin_id, password: 'general1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[1].admin_id, password: 'general1234', account_status: AccountStatus.ACTIVE },
-      { admin_id: admins[2].admin_id, password: 'general1234', account_status: AccountStatus.ACTIVE }
+      { admin_id: admins[1].admin_id, password: 'general5678', account_status: AccountStatus.ACTIVE },
+      { admin_id: admins[2].admin_id, password: 'general9999', account_status: AccountStatus.ACTIVE },
+      { admin_id: admins[0].admin_id, password: 'general0000', account_status: AccountStatus.ACTIVE },
+      { admin_id: admins[2].admin_id, password: 'general5555', account_status: AccountStatus.ACTIVE }
+    ]);
+
+    // 6. LocalGovernment 데이터 생성 (region/local_government 조합)
+    const localGovernmentRepo = dataSource.getRepository('local_government');
+    await localGovernmentRepo.save([
+      {
+        region_id: regions[0].region_id, // 서울특별시
+        manager_public_id: publicManagers[0].manager_public_id,
+        manager_general_id: generalManagers[1].manager_general_id, // 일반 관리자 1 (general5678)
+        region_name: '서울특별시',
+        local_government_name: '서울특별시 노원구'
+      },
+      {
+        region_id: regions[1].region_id, // 경기도
+        manager_public_id: publicManagers[1].manager_public_id,
+        manager_general_id: generalManagers[0].manager_general_id, // 일반 관리자 0 (general1234)
+        region_name: '경기도',
+        local_government_name: '경기도 양평시'
+      }
     ]);
 
     // 6. Employer 데이터 생성
     const employerRepo = dataSource.getRepository(Employer);
-    const employers = await employerRepo.save([
+    const employerDummyData = [
       {
         password: 'emp1234',
         owner_name: '김사장',
@@ -109,9 +135,7 @@ export async function POST() {
         business_reg_no: '123-45-67890',
         address: '경기도 양평군 양평읍',
         phone: '031-1234-5678',
-        account_status: AccountStatus.ACTIVE,
-        manager_general_id: generalManagers[0].manager_general_id,
-        manager_public_id: publicManagers[0].manager_public_id
+        account_status: AccountStatus.ACTIVE
       },
       {
         password: 'emp1234',
@@ -120,9 +144,7 @@ export async function POST() {
         business_reg_no: '234-56-78901',
         address: '강원도 춘천시 남면',
         phone: '033-2345-6789',
-        account_status: AccountStatus.ACTIVE,
-        manager_general_id: generalManagers[1].manager_general_id,
-        manager_public_id: publicManagers[1].manager_public_id
+        account_status: AccountStatus.ACTIVE
       },
       {
         password: 'emp1234',
@@ -131,9 +153,7 @@ export async function POST() {
         business_reg_no: '345-67-89012',
         address: '충청남도 당진시 송악읍',
         phone: '041-3456-7890',
-        account_status: AccountStatus.ACTIVE,
-        manager_general_id: generalManagers[2].manager_general_id,
-        manager_public_id: publicManagers[2].manager_public_id
+        account_status: AccountStatus.ACTIVE
       },
       {
         password: 'emp1234',
@@ -142,22 +162,26 @@ export async function POST() {
         business_reg_no: '456-78-90123',
         address: '전라남도 나주시 봉황면',
         phone: '061-4567-8901',
-        account_status: AccountStatus.ACTIVE,
-        manager_general_id: generalManagers[3].manager_general_id,
-        manager_public_id: publicManagers[3].manager_public_id
+        account_status: AccountStatus.ACTIVE
       },
       {
         password: 'emp1234',
-        owner_name: '정대리',
-        business_name: '바다채소농장',
+        owner_name: '정농장',
+        business_name: '청정채소농장',
         business_reg_no: '567-89-01234',
-        address: '경상남도 거제시 일운면',
+        address: '경상남도 창원시 의창구',
         phone: '055-5678-9012',
-        account_status: AccountStatus.ACTIVE,
-        manager_general_id: generalManagers[4].manager_general_id,
-        manager_public_id: publicManagers[4].manager_public_id
+        account_status: AccountStatus.ACTIVE
       }
-    ]);
+    ];
+
+    const employers = await employerRepo.save(
+      employerDummyData.map((data, i) => ({
+        ...data,
+        manager_general_id: generalManagers[i % generalManagers.length].manager_general_id,
+        manager_public_id: publicManagers[i % publicManagers.length].manager_public_id
+      }))
+    );
 
     // 7. SeasonWorker 데이터 생성
     const workerRepo = dataSource.getRepository(SeasonWorker);
@@ -282,14 +306,20 @@ export async function DELETE() {
   try {
     const dataSource = await initializeDataSource();
 
-    // 역순으로 삭제 (외래키 제약 조건 때문)
-    await dataSource.getRepository(SeasonWorker).clear();
-    await dataSource.getRepository(Employer).clear();
-    await dataSource.getRepository(LocalManagerGeneral).clear();
-    await dataSource.getRepository(LocalManagerPublic).clear();
-    await dataSource.getRepository(Admin).clear();
-    await dataSource.getRepository(Country).clear();
-    await dataSource.getRepository(Region).clear();
+    // 외래키 관계에 따라 자식 테이블부터 삭제 (QueryBuilder 사용)
+    await dataSource.getRepository(VisaStatus).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Insurance).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(BankAccount).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(CreditCard).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(ErrorCode).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(SeasonWorker).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Payment).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Employer).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(LocalManagerGeneral).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(LocalManagerPublic).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Admin).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Country).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Region).createQueryBuilder().delete().execute();
 
     return NextResponse.json({
       success: true,

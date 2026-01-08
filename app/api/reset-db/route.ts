@@ -2,20 +2,18 @@ import { NextResponse } from 'next/server';
 import { AppDataSource } from '@/lib/data-source';
 
 export function OPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    },
-  });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
  * @swagger
+ * tags:
+ *   - name: Etc
+ *     description: 기타 관리 API
  * /api/reset-db:
  *   post:
+ *     tags:
+ *       - Etc
  *     summary: 데이터베이스 초기화
  *     description: 모든 테이블을 삭제하고 다시 생성합니다 (개발 환경 전용, 주의!)
  *     responses:

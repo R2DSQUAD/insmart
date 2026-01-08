@@ -4,20 +4,18 @@ import { initializeDataSource } from '@/lib/data-source';
 import { LocalManagerPublic, AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
 export function OPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    },
-  });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
  * @swagger
+ * tags:
+ *   - name: ManagerPublic
+ *     description: 공공형 관리자 인증 및 관리
  * /api/manager/public:
  *   get:
+ *     tags:
+ *       - ManagerPublic
  *     summary: 공공형 관리자 목록 조회 또는 특정 관리자 조회
  *     parameters:
  *       - in: query
@@ -25,14 +23,20 @@ export function OPTIONS() {
  *         schema:
  *           type: integer
  *   post:
+ *     tags:
+ *       - ManagerPublic
  *     summary: 공공형 관리자 생성
  *   put:
+ *     tags:
+ *       - ManagerPublic
  *     summary: 공공형 관리자 정보 수정
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
  *   delete:
+ *     tags:
+ *       - ManagerPublic
  *     summary: 공공형 관리자 삭제
  *     parameters:
  *       - in: query
@@ -61,9 +65,7 @@ export async function GET(request: NextRequest) {
         }, {
           status: 404,
           headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
           },
         });
       }
@@ -73,9 +75,7 @@ export async function GET(request: NextRequest) {
         data: manager
       }, {
         headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
         },
       });
     }
@@ -91,9 +91,7 @@ export async function GET(request: NextRequest) {
       count: managers.length
     }, {
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
       },
     });
   } catch (error) {

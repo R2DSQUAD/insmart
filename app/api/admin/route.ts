@@ -1,18 +1,125 @@
+/**
+ * @swagger
+ * /api/admin:
+ *   put:
+ *     tags:
+ *       - Admin
+ *     summary: 관리자 정보 수정
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               name:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 성공적으로 수정됨
+ *       400:
+ *         description: 필수값 누락
+ */
+/**
+ * @swagger
+ * /api/admin:
+ *   delete:
+ *     tags:
+ *       - Admin
+ *     summary: 관리자 삭제
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 성공적으로 삭제됨
+ *       400:
+ *         description: 필수값 누락
+ */
 import 'reflect-metadata';
+/**
+ * @swagger
+ * tags:
+ *   - name: Admin
+ *     description: 관리자 관련 API
+ */
+/**
+ * @swagger
+ * /api/admin:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: 전체 관리자 목록 또는 특정 관리자 조회
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         description: 특정 관리자 ID (선택사항)
+ *     responses:
+ *       200:
+ *         description: 성공적으로 조회됨
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Admin'
+ *       404:
+ *         description: 관리자를 찾을 수 없음
+ */
+/**
+ * @swagger
+ * /api/admin:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: 관리자 생성
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 성공적으로 생성됨
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Admin'
+ *       400:
+ *         description: 필수값 누락
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 import { Admin } from '@/lib/entity/Admin';
 
 // CORS 프리플라이트 및 모든 응답에 CORS 헤더 추가
 export function OPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    },
-  });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
@@ -65,9 +172,7 @@ export async function GET(request: NextRequest) {
         }, {
           status: 404,
           headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
           },
         });
       }
@@ -77,9 +182,7 @@ export async function GET(request: NextRequest) {
         data: admin
       }, {
         headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
         },
       });
     }
@@ -95,9 +198,7 @@ export async function GET(request: NextRequest) {
       data: admins
     }, {
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
       },
     });
   } catch (error) {

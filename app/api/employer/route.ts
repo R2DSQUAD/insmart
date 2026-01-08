@@ -5,20 +5,18 @@ import { Employer } from '@/lib/entity/Employer';
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
 export function OPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    },
-  });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
  * @swagger
+ * tags:
+ *   - name: Employer
+ *     description: 사업자 관련 API
  * /api/employer:
  *   get:
+ *     tags:
+ *       - Employer
  *     summary: 사업자 목록 조회 또는 특정 사업자 조회
  *     parameters:
  *       - in: query
@@ -34,14 +32,20 @@ export function OPTIONS() {
  *         schema:
  *           type: integer
  *   post:
+ *     tags:
+ *       - Employer
  *     summary: 사업자 생성
  *   put:
+ *     tags:
+ *       - Employer
  *     summary: 사업자 정보 수정
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
  *   delete:
+ *     tags:
+ *       - Employer
  *     summary: 사업자 삭제
  *     parameters:
  *       - in: query
@@ -70,9 +74,7 @@ export async function GET(request: NextRequest) {
         }, {
           status: 404,
           headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
           },
         });
       }
@@ -82,9 +84,7 @@ export async function GET(request: NextRequest) {
         data: employer
       }, {
         headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+// ...existing code...
         },
       });
     }
