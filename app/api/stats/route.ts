@@ -6,6 +6,17 @@ import { LocalManagerGeneral } from '@/lib/entity/LocalManagerGeneral';
 import { Employer } from '@/lib/entity/Employer';
 import { SeasonWorker } from '@/lib/entity/SeasonWorker';
 
+export function OPTIONS() {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
+  });
+}
+
 /**
  * @swagger
  * /api/stats:
