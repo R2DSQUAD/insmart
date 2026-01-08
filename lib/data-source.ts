@@ -1,25 +1,20 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { Admin } from './entity/Admin';
-import { Region } from './entity/Region';
-import { LocalManagerPublic } from './entity/LocalManagerPublic';
-import { LocalManagerGeneral } from './entity/LocalManagerGeneral';
-import { LocalGovernment } from './entity/LocalGovernment';
-import { Employer } from './entity/Employer';
-import { SeasonWorker } from './entity/SeasonWorker';
-import { Country } from './entity/Country';
-import { VisaStatus } from './entity/VisaStatus';
-import { Insurance } from './entity/Insurance';
-import { Payment } from './entity/Payment';
-import { BankAccount } from './entity/BankAccount';
-import { CreditCard } from './entity/CreditCard';
-import { ErrorCode } from './entity/ErrorCode';
-
-// Global DataSource instance with initialized state tracking
-declare global {
-  // eslint-disable-next-line no-var
-  var __APP_DATASOURCE__: DataSource | undefined;
-}
+import { Admin } from '@/lib/entity/Admin';
+import { Region } from '@/lib/entity/Region';
+import { LocalManagerPublic } from '@/lib/entity/LocalManagerPublic';
+import { LocalManagerGeneral } from '@/lib/entity/LocalManagerGeneral';
+import { LocalGovernment } from '@/lib/entity/LocalGovernment';
+import { Employer } from '@/lib/entity/Employer';
+import { SeasonWorker } from '@/lib/entity/SeasonWorker';
+import { Country } from '@/lib/entity/Country';
+import { VisaStatus } from '@/lib/entity/VisaStatus';
+import { Insurance } from '@/lib/entity/Insurance';
+import { Payment } from '@/lib/entity/Payment';
+import { BankAccount } from '@/lib/entity/BankAccount';
+import { CreditCard } from '@/lib/entity/CreditCard';
+import { ErrorCode } from '@/lib/entity/ErrorCode';
+import { User } from '@/lib/entity/User';
 
 // Create DataSource with explicit entity instances
 const AppDataSource = new DataSource({
@@ -46,6 +41,7 @@ const AppDataSource = new DataSource({
     BankAccount,
     CreditCard,
     ErrorCode,
+    User,
   ],
   migrations: [],
   subscribers: [],
@@ -53,16 +49,9 @@ const AppDataSource = new DataSource({
 
 export async function initializeDataSource(): Promise<DataSource> {
   try {
-    // Use global cached instance if available and initialized
-    if (global.__APP_DATASOURCE__?.isInitialized) {
-      console.log('[TypeORM] Reusing existing DataSource');
-      return global.__APP_DATASOURCE__;
-    }
-
     // Initialize if not yet done
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
-      global.__APP_DATASOURCE__ = AppDataSource;
       console.log('[TypeORM] DataSource initialized successfully');
     }
 

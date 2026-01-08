@@ -20,7 +20,7 @@ export class LocalGovernment {
   @Column({ type: 'varchar', comment: '자치단체 이름' })
   local_government_name: string;
 
-  @ManyToOne('Region', 'localGovernments')
+  @ManyToOne(() => require('./Region').Region, region => region.localGovernments)
   @JoinColumn({ name: 'region_id' })
   region: any;
 

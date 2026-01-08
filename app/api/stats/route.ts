@@ -7,20 +7,18 @@ import { Employer } from '@/lib/entity/Employer';
 import { SeasonWorker } from '@/lib/entity/SeasonWorker';
 
 export function OPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    },
-  });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
  * @swagger
+ * tags:
+ *   - name: Etc
+ *     description: 기타 관리 API
  * /api/stats:
  *   get:
+ *     tags:
+ *       - Etc
  *     summary: 통계 정보 조회
  *     description: 전체 시스템의 통계 정보를 조회합니다 (관리자, 매니저, 사업자, 노동자 수 및 상세 통계)
  *     responses:
