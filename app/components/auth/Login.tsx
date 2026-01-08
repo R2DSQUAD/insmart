@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import styles from "../../styles/auth/login.module.css";
 
 export default function Login() {
+  const router = useRouter();
   const [regions, setRegions] = useState<any[]>([]);
   const [localGovernments, setLocalGovernments] = useState<any[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -88,7 +90,26 @@ export default function Login() {
       });
       const data = await res.json();
       if (data.success) {
-        alert("로그인 성공");
+  alert("로그인 성공");
+  // 인증정보를 쿠키에 저장 (만료 1일)
+  const expires = new Date(Date.now() + 86400 * 1000).toUTCString();
+  document.cookie = `type=${encodeURIComponent(userType)}; expires=${expires}; path=/`;
+  document.cookie = `pinCode=${encodeURIComponent(pin)}; expires=${expires}; path=/`;
+  document.cookie = `region=${encodeURIComponent(regionName)}; expires=${expires}; path=/`;
+  document.cookie = `local_government=${encodeURIComponent(localGovName)}; expires=${expires}; path=/`;
+        // userType별로 정확히 분기
+        if (userType === "seasonWorker") {
+          router.push("/dashboard/seasonWorker");
+        } else if (userType === "employer") {
+          router.push("/dashboard/employer");
+        } else if (userType === "public") {
+          router.push("/dashboard/manager/public");
+        } else if (userType === "general") {
+          router.push("/dashboard/manager/general");
+        } else {
+          // fallback: 홈으로 이동
+          router.push("/");
+        }
       } else {
         alert(`로그인 실패: ${data.error || data.error_context || data.message || "알 수 없는 오류"}`);
       }
@@ -102,12 +123,10 @@ export default function Login() {
 
 
   return (
-    <>
+    <div className={styles.loginContainer}>
       <h1>통합 로그인 테스트</h1>
-      {/* 모든 로그인에서 2단계 인증 적용 */}
-      {/* adminLogin은 핀번호 인증만, userLogin은 2단계 */}
       {step === 1 && (
-        <>
+        <form className={styles.loginForm} onSubmit={e => e.preventDefault()}>
           <div>
             <select value={userType} onChange={e => setUserType(e.target.value)}>
               {userTypeOptions.map(opt => (
@@ -152,9 +171,9 @@ export default function Login() {
             placeholder="핀코드 입력"
             value={pin}
             onChange={e => setPin(e.target.value)}
-            style={{ marginLeft: 8 }}
           />
           <button
+            type="button"
             onClick={async () => {
               setLoading(true);
               const body: any = {
@@ -163,12 +182,10 @@ export default function Login() {
                 local_government: localGovName,
                 pinCode: pin
               };
-              
               // userLogin일 경우 1차 인증임을 명시
               if (pathname === "/userLogin") {
                 body.step = 1;
               }
-              
               try {
                 const res = await fetch("/api/auth", {
                   method: "POST",
@@ -179,7 +196,14 @@ export default function Login() {
                 if (data.success) {
                   if (pathname === "/adminLogin") {
                     alert("로그인 성공");
+                    // 관리자 로그인 성공 시 관리자 페이지로 이동
+                    if (userType === "public") {
+                      router.push("/dashboard/manager/public");
+                    } else if (userType === "general") {
+                      router.push("/dashboard/manager/general");
+                    }
                   } else if (pathname === "/userLogin") {
+                    alert("로그인 성공");
                     setStep(2);
                   }
                 } else {
@@ -192,15 +216,14 @@ export default function Login() {
               }
             }}
             disabled={!selectedRegion || !selectedLocalGov || !pin || loading}
-            style={{ marginLeft: 8 }}
           >
             핀번호 인증
           </button>
-        </>
+        </form>
       )}
       {/* userLogin만 2차 인증 */}
       {step === 2 && pathname === "/userLogin" && (
-        <>
+        <form className={styles.loginForm} onSubmit={e => e.preventDefault()}>
           {userType === "seasonWorker" && (
             <>
               <input
@@ -214,14 +237,12 @@ export default function Login() {
                 placeholder="여권번호"
                 value={passportNo}
                 onChange={e => setPassportNo(e.target.value)}
-                style={{ marginLeft: 8 }}
               />
               <input
                 type="text"
-                placeholder="생년월일(YYYY-MM-DD)"
+                placeholder="생년월일(YYMMDD)"
                 value={birth}
                 onChange={e => setBirth(e.target.value)}
-                style={{ marginLeft: 8 }}
               />
             </>
           )}
@@ -238,30 +259,28 @@ export default function Login() {
                 placeholder="전화번호"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                style={{ marginLeft: 8 }}
               />
               <input
                 type="text"
                 placeholder="문자인증코드"
                 value={smsCode}
                 onChange={e => setSmsCode(e.target.value)}
-                style={{ marginLeft: 8 }}
               />
             </>
           )}
           <button
+            type="button"
             onClick={handleAuth}
             disabled={
               loading ||
               (userType === "seasonWorker" && (!passportName || !passportNo || !birth)) ||
               (userType === "employer" && (!employerName || !phone))
             }
-            style={{ marginLeft: 8 }}
           >
             Login
           </button>
-        </>
+        </form>
       )}
-    </>
+    </div>
   );
 }
