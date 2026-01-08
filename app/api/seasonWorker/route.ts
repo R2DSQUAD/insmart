@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     // 관계(Relation) 이름은 Entity 정의에 따라 다를 수 있습니다. (visaStatus vs visaStatuses)
     // 여기서는 일반적인 N:1 관계를 가정하여 작성합니다.
     let qb = workerRepo.createQueryBuilder('worker')
-      .leftJoinAndSelect('worker.visaStatuses', 'visa')      
+      .leftJoinAndSelect('worker.visaStatus', 'visa')
       .leftJoinAndSelect('worker.insurances', 'insurance')
       .leftJoinAndSelect('worker.employer', 'employer');
 
@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
     // 5. 결과 매핑
     const result = workers.map(worker => {
       // 관계 데이터가 없을 경우를 대비해 Optional Chaining 사용
-      const visa = worker.visaStatuses?.[0] || {}; 
+      const visa = worker.visaStatus?.[0] || {}; 
       const insurance = worker.insurances?.[0] || {};
       const employer = worker.employer || {};
 
