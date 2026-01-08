@@ -15,14 +15,14 @@ export default function IndexComponent() {
       subtitle: t("admin.subtitle"),
       items: [t("admin.item1"), t("admin.item2")],
       icon: "/images/icon-admin.png",
-      href: "/admin",
+      href: "/adminLogin",
     },
     {
       title: t("personal.title"),
       subtitle: t("personal.subtitle"),
       items: [t("personal.item1"), t("personal.item2")],
       icon: "/images/icon-personal.png",
-      href: "/personal",
+      href: "/userLogin",
     },
     {
       title: t("inmedic.title"),
