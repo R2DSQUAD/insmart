@@ -4,6 +4,17 @@ import { initializeDataSource } from '@/lib/data-source';
 import { SeasonWorker, Gender, RegisterStatus } from '@/lib/entity/SeasonWorker';
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
+export function OPTIONS() {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
+  });
+}
+
 /**
  * @swagger
  * /api/worker:
@@ -60,12 +71,25 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: '노동자를 찾을 수 없습니다'
-        }, { status: 404 });
+        }, {
+          status: 404,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+          },
+        });
       }
 
       return NextResponse.json({
         success: true,
         data: worker
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+        },
       });
     }
 

@@ -3,6 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 import { Admin } from '@/lib/entity/Admin';
 
+// CORS 프리플라이트 및 모든 응답에 CORS 헤더 추가
+export function OPTIONS() {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
+  });
+}
+
 /**
  * @swagger
  * /api/admin:
@@ -50,12 +62,25 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: '관리자를 찾을 수 없습니다'
-        }, { status: 404 });
+        }, {
+          status: 404,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+          },
+        });
       }
 
       return NextResponse.json({
         success: true,
         data: admin
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+        },
       });
     }
 
@@ -67,8 +92,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: admins,
-      count: admins.length
+      data: admins
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      },
     });
   } catch (error) {
     console.error('Admin 조회 오류:', error);

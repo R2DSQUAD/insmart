@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { AppDataSource } from '@/lib/data-source';
 
+export function OPTIONS() {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
+  });
+}
+
 /**
  * @swagger
  * /api/reset-db:

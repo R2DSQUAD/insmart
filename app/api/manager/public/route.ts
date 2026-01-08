@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 import { LocalManagerPublic, AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
+export function OPTIONS() {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    },
+  });
+}
+
 /**
  * @swagger
  * /api/manager/public:
@@ -47,12 +58,25 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: '공공형 관리자를 찾을 수 없습니다'
-        }, { status: 404 });
+        }, {
+          status: 404,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+          },
+        });
       }
 
       return NextResponse.json({
         success: true,
         data: manager
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+        },
       });
     }
 
@@ -65,6 +89,12 @@ export async function GET(request: NextRequest) {
       success: true,
       data: managers,
       count: managers.length
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      },
     });
   } catch (error) {
     console.error('공공형 관리자 조회 오류:', error);
