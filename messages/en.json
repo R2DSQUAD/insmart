@@ -1,0 +1,24 @@
+{
+  "계절근로자_구독_서비스": "Seasonal Worker Subscription Service",
+  "외국인_계절근로자_단체_상해_보험": "Foreign Seasonal Worker Group Accident Insurance",
+  "의료_통역부터_보험처리까지": "From medical interpretation to insurance processing",
+  "쉽고_간편하게_제공합니다": "We provide it easily and simply",
+  "admin": {
+    "title": "Admin",
+    "subtitle": "System Management",
+    "item1": "User management and permission settings",
+    "item2": "System settings and monitoring"
+  },
+  "personal": {
+    "title": "Personal User",
+    "subtitle": "Worker Information Management",
+    "item1": "Manage personal profile",
+    "item2": "View insurance and medical records"
+  },
+  "inmedic": {
+    "title": "Inmedic",
+    "subtitle": "Medical Service",
+    "item1": "Medical interpretation service",
+    "item2": "Health consultation and appointment"
+  }
+}
