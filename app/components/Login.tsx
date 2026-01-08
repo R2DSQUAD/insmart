@@ -49,9 +49,13 @@ export default function Login() {
       });
   }, []);
 
+  // 자치단체가 하나도 없는 region은 행정구역 select에서 제외
+  const regionIdsWithLocalGov = new Set(localGovernments.map(lg => String(lg.region_id)));
+  const filteredRegions = regions.filter(r => regionIdsWithLocalGov.has(String(r.region_id)));
+  // 선택된 행정구역에 속한 자치단체만 필터링 (행정구역 선택 시만)
   const filteredLocalGovs = selectedRegion
     ? localGovernments.filter((lg) => String(lg.region_id) === selectedRegion)
-    : [];
+    : localGovernments;
 
   // region_name, local_government_name 추출
   const regionName = regions.find(r => String(r.region_id) === selectedRegion)?.region_name || "";
@@ -122,7 +126,7 @@ export default function Login() {
             }}
           >
             <option value="">행정구역 선택</option>
-            {regions.map((region) => (
+            {filteredRegions.map((region) => (
               <option key={region.region_id} value={region.region_id}>
                 {region.region_name}
               </option>
@@ -130,8 +134,12 @@ export default function Login() {
           </select>
           <select
             value={selectedLocalGov}
-            onChange={e => setSelectedLocalGov(e.target.value)}
-            disabled={!selectedRegion}
+            onChange={e => {
+              setSelectedLocalGov(e.target.value);
+              // 자치단체 선택 시 해당 자치단체의 region_id로 행정구역 자동 선택
+              const lg = localGovernments.find(lg => String(lg.local_government_id) === e.target.value);
+              if (lg) setSelectedRegion(String(lg.region_id));
+            }}
           >
             <option value="">자치단체 선택</option>
             {filteredLocalGovs.map((lg) => (

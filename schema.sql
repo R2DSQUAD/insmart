@@ -77,8 +77,10 @@ CREATE TABLE season_worker (
   manager_public_id BIGINT NOT NULL COMMENT '공공형 관리자 FK',
   employer_id BIGINT NOT NULL COMMENT '사업자 FK',
   bank_account VARCHAR(255) COMMENT '계좌번호',
+  visa_code VARCHAR(20) COMMENT '비자유형 코드',
   FOREIGN KEY (manager_public_id) REFERENCES local_manager_public(manager_public_id),
-  FOREIGN KEY (employer_id) REFERENCES employer(employer_id)
+  FOREIGN KEY (employer_id) REFERENCES employer(employer_id),
+  FOREIGN KEY (visa_code) REFERENCES visa_status(visa_code)
 ) COMMENT='계절 노동자 테이블';
 
 CREATE TABLE country (
@@ -87,13 +89,10 @@ CREATE TABLE country (
   country_name VARCHAR(100) NOT NULL COMMENT '국가명'
 ) COMMENT='국가 테이블';
 
--- 비자유형 테이블
 CREATE TABLE visa_status (
   visa_status_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '비자유형 PK',
-  worker_id BIGINT NOT NULL COMMENT '노동자 FK',
-  visa_code CHAR(10) COMMENT '비자유형 코드',
-  visa_description VARCHAR(255) COMMENT '비자 상세 내용',
-  FOREIGN KEY (worker_id) REFERENCES season_worker(worker_id)
+  visa_code VARCHAR(20) NOT NULL UNIQUE COMMENT '비자유형 코드',
+  visa_description VARCHAR(255) COMMENT '비자 상세 내용'
 ) COMMENT='비자유형 테이블';
 
 -- 보험 테이블

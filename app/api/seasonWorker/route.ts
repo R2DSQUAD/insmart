@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
     // 5. 결과 매핑
     const result = workers.map(worker => {
       // 관계 데이터가 없을 경우를 대비해 Optional Chaining 사용
-      const visa = worker.visaStatuses?.[0] || {}; 
+      const visa = worker.visaStatus?.[0] || {}; 
       const insurance = worker.insurances?.[0] || {};
       const employer = worker.employer || {};
 

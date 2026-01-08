@@ -89,8 +89,13 @@ export class SeasonWorker {
   @OneToMany('Country', 'worker')
   countries: any[];
 
-  @OneToMany('VisaStatus', 'worker')
-  visaStatuses: any[];
+
+  @Column({ type: 'varchar', length: 20, comment: '비자유형 코드', nullable: true })
+  visa_code: string;
+
+  @ManyToOne('VisaStatus')
+  @JoinColumn({ name: 'visa_code', referencedColumnName: 'visa_code' })
+  visaStatus: any;
 
   @OneToMany('Insurance', 'worker')
   insurances: any[];

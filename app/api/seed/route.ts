@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { LocalGovernment } from '@/lib/entity/LocalGovernment';
 import { initializeDataSource } from '@/lib/data-source';
 import { Admin } from '@/lib/entity/Admin';
 import { LocalManagerPublic } from '@/lib/entity/LocalManagerPublic';
@@ -8,7 +9,7 @@ import { SeasonWorker, Gender, RegisterStatus } from '@/lib/entity/SeasonWorker'
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 import { Region } from '@/lib/entity/Region';
 import { Country } from '@/lib/entity/Country';
-import { Payment } from '@/lib/entity/Payment';
+import { Payment, PaymentType, PaymentMethod, PaymentStatus } from '@/lib/entity/Payment';
 import { VisaStatus } from '@/lib/entity/VisaStatus';
 import { Insurance } from '@/lib/entity/Insurance';
 import { BankAccount } from '@/lib/entity/BankAccount';
@@ -145,68 +146,70 @@ export async function POST() {
 
     // 6. Employer 데이터 생성
     const employerRepo = dataSource.getRepository(Employer);
-    const employerDummyData = [
+    const employers = await employerRepo.save([
       {
         password: 'emp1234',
-        owner_name: '김사장',
-        business_name: '행복농장',
+        owner_name: '김사업',
+        business_name: '농업회사1',
         business_reg_no: '123-45-67890',
-        address: '경기도 양평군 양평읍',
-        phone: '031-1234-5678',
-        account_status: AccountStatus.ACTIVE
+        address: '경기도 양평군 농업로 123',
+        phone: '010-1234-5678',
+        account_status: AccountStatus.ACTIVE,
+        manager_general_id: generalManagers[0].manager_general_id,
+        manager_public_id: publicManagers[0].manager_public_id
       },
       {
         password: 'emp1234',
-        owner_name: '이대표',
-        business_name: '풍요농업법인',
-        business_reg_no: '234-56-78901',
-        address: '강원도 춘천시 남면',
-        phone: '033-2345-6789',
-        account_status: AccountStatus.ACTIVE
+        owner_name: '이사업',
+        business_name: '농업회사2',
+        business_reg_no: '123-45-67891',
+        address: '경기도 양평군 농업로 456',
+        phone: '010-2345-6789',
+        account_status: AccountStatus.ACTIVE,
+        manager_general_id: generalManagers[1].manager_general_id,
+        manager_public_id: publicManagers[1].manager_public_id
       },
       {
         password: 'emp1234',
-        owner_name: '박농부',
-        business_name: '황금들녘농장',
-        business_reg_no: '345-67-89012',
-        address: '충청남도 당진시 송악읍',
-        phone: '041-3456-7890',
-        account_status: AccountStatus.ACTIVE
+        owner_name: '박사업',
+        business_name: '농업회사3',
+        business_reg_no: '123-45-67892',
+        address: '강원도 철원군 농업로 789',
+        phone: '010-3456-7890',
+        account_status: AccountStatus.ACTIVE,
+        manager_general_id: generalManagers[2].manager_general_id,
+        manager_public_id: publicManagers[2].manager_public_id
       },
       {
         password: 'emp1234',
-        owner_name: '최농장주',
-        business_name: '신선과일농장',
-        business_reg_no: '456-78-90123',
-        address: '전라남도 나주시 봉황면',
-        phone: '061-4567-8901',
-        account_status: AccountStatus.ACTIVE
+        owner_name: '최사업',
+        business_name: '농업회사4',
+        business_reg_no: '123-45-67893',
+        address: '충청남도 홍성군 농업로 321',
+        phone: '010-4567-8901',
+        account_status: AccountStatus.ACTIVE,
+        manager_general_id: generalManagers[3].manager_general_id,
+        manager_public_id: publicManagers[3].manager_public_id
       },
       {
         password: 'emp1234',
-        owner_name: '정농장',
-        business_name: '청정채소농장',
-        business_reg_no: '567-89-01234',
-        address: '경상남도 창원시 의창구',
-        phone: '055-5678-9012',
-        account_status: AccountStatus.ACTIVE
+        owner_name: '정사업',
+        business_name: '농업회사5',
+        business_reg_no: '123-45-67894',
+        address: '전라남도 나주시 농업로 654',
+        phone: '010-5678-9012',
+        account_status: AccountStatus.ACTIVE,
+        manager_general_id: generalManagers[4].manager_general_id,
+        manager_public_id: publicManagers[4].manager_public_id
       }
-    ];
-
-    const employers = await employerRepo.save(
-      employerDummyData.map((data, i) => ({
-        ...data,
-        manager_general_id: generalManagers[i % generalManagers.length].manager_general_id,
-        manager_public_id: publicManagers[i % publicManagers.length].manager_public_id
-      }))
-    );
+    ]);
 
     // 7. SeasonWorker 데이터 생성
     const workerRepo = dataSource.getRepository(SeasonWorker);
     
+    // 이름 더미 데이터
     const vietnameseNames = ['Nguyen Van A', 'Tran Thi B', 'Le Van C', 'Pham Thi D', 'Hoang Van E'];
-    const thaiNames = ['Somchai Wong', 'Siriwan Phan', 'Niran Chan', 'Achara Tan', 'Kamon Lee'];
-    const cambodianNames = ['Sok Dara', 'Chea Srey', 'Kosal Rith', 'Sophea Chan', 'Veasna Kim'];
+    const thaiNames = ['Somchai', 'Apsara', 'Kanya', 'Niran', 'Ploy'];
     
     const workers: any[] = [];
     
@@ -214,7 +217,7 @@ export async function POST() {
     for (let i = 0; i < 15; i++) {
       workers.push({
         password: 'worker1234',
-        country_code: 'VN',
+        country_code: 'VNM',
         passport_id: `V${String(i + 1).padStart(8, '0')}`,
         passport_expired: '2027-12-31',
         name: vietnameseNames[i % 5],
@@ -233,7 +236,7 @@ export async function POST() {
     for (let i = 0; i < 10; i++) {
       workers.push({
         password: 'worker1234',
-        country_code: 'TH',
+        country_code: 'THA',
         passport_id: `T${String(i + 1).padStart(8, '0')}`,
         passport_expired: '2027-06-30',
         name: thaiNames[i % 5],
@@ -248,11 +251,13 @@ export async function POST() {
       } as any);
     }
 
+    const savedWorkers = await workerRepo.save(workers);
+
     // 8. 보험 더미 데이터 생성
     const insuranceRepo = dataSource.getRepository(Insurance);
     const insurances: any[] = [];
-    for (let i = 0; i < workers.length; i++) {
-      const worker = workers[i];
+    for (let i = 0; i < savedWorkers.length; i++) {
+      const worker = savedWorkers[i];
       const startDate = new Date();
       startDate.setMonth(startDate.getMonth() - (i % 12));
       const endDate = new Date(startDate);
@@ -271,32 +276,45 @@ export async function POST() {
       insurances.push(savedInsurance);
     }
 
-    // 9. VisaStatus 더미 데이터 생성
+    // 9. VisaStatus 더미 데이터 생성 (9개만 생성)
     const visaStatusRepo = dataSource.getRepository(VisaStatus);
-    const visaStatuses: any[] = [];
-    const visaCodes = [
-      'E-8-1',
-      'E-8-2',
-      'E-8-3',
-      'E-8-4',
-      'E-8-5',
-      'E-8-6',
-      'E-8-7',
-      'E-8-8',
-      'E-8-99'
+    const visaCodeList = [
+      { code: 'E-8-1', desc: '국내 지자체와 외국 지자체 간의 MOU 방식(농업)' },
+      { code: 'E-8-2', desc: '한국 국민과 결혼하여 F6 비자를 받은 이민자의 4촌 이내 친척 추천(농업)' },
+      { code: 'E-8-3', desc: '국내 지자체와 외국 지자체 간의 MOU 방식(어업)' },
+      { code: 'E-8-4', desc: '한국 국민과 결혼하여 F6 비자를 받은 이민자의 4촌 이내 친척 추천(어업)' },
+      { code: 'E-8-5', desc: 'G-1 자격으로 계절근로 후 재입국 추천(농업)' },
+      { code: 'E-8-6', desc: 'G-1 자격으로 계절근로 후 재입국 추천(어업)' },
+      { code: 'E-8-7', desc: '유학생 부모 초청(농업)' },
+      { code: 'E-8-8', desc: '유학생 부모 초청(dj업)' },
+      { code: 'E-8-99', desc: '언어소통 도우미 등 기타 보조 인력' }
     ];
-    for (let i = 0; i < workers.length; i++) {
-      const worker = workers[i];
-      const visaCode = visaCodes[i % visaCodes.length];
+    const visaStatuses: any[] = [];
+    for (const visa of visaCodeList) {
       const visaStatus = visaStatusRepo.create({
-        visa_code: visaCode,
-        worker_id: worker.worker_id
+        visa_code: visa.code,
+        visa_description: visa.desc
       });
       const savedVisaStatus = await visaStatusRepo.save(visaStatus);
       visaStatuses.push(savedVisaStatus);
     }
+      // ...existing code...
 
-    // 10. ErrorCode 더미 데이터 생성
+    // 10. Payment 더미 데이터 생성
+    const paymentRepo = dataSource.getRepository(Payment);
+    const payments = [];
+    for (let i = 0; i < employers.length; i++) {
+      const payment = paymentRepo.create({
+        payment_type: i % 2 === 0 ? PaymentType.AUTO_TRANSFER : PaymentType.SYSTEM_PAYMENT,
+        payment_method: i % 3 === 0 ? PaymentMethod.CARD : PaymentMethod.ACCOUNT,
+        employer_id: employers[i].employer_id,
+        payment_amount: 500000 + (i * 100000),
+        payment_status: PaymentStatus.COMPLETE
+      });
+      payments.push(await paymentRepo.save(payment));
+    }
+
+    // 11. ErrorCode 더미 데이터 생성
     const errorCodeRepo = dataSource.getRepository(ErrorCode);
     const errorContextList = [
       '인증 정보가 올바르지 않습니다.',
@@ -314,7 +332,7 @@ export async function POST() {
     for (let i = 0; i < errorContextList.length; i++) {
       const entity = errorCodeRepo.create({
         error_context: errorContextList[i],
-        payment_id: employers[(i % employers.length)].employer_id // 실제 payment_id가 필요하다면 payment 생성 후 할당 필요
+        payment_id: payments[(i % payments.length)].payment_id
       });
       errorCodes.push(await errorCodeRepo.save(entity));
     }
@@ -327,9 +345,10 @@ export async function POST() {
       publicManagers: publicManagers.length,
       generalManagers: generalManagers.length,
       employers: employers.length,
-      workers: workers.length,
+      workers: savedWorkers.length,
       insurances: insurances.length,
       visaStatuses: visaStatuses.length,
+      payments: payments.length,
       errorCodes: errorCodes.length
     };
 
@@ -340,8 +359,7 @@ export async function POST() {
       detail: {
         workersByCountry: {
           vietnam: 15,
-          thailand: 10,
-          cambodia: 10
+          thailand: 10
         },
         insurances: {
           active: insurances.filter((ins: any) => !ins.cancellation_date).length,
@@ -361,8 +379,6 @@ export async function POST() {
         errorCodes: errorCodes.map((e: any) => ({ code: e.code, message: e.message }))
       }
     }, { status: 201 });
-    
-    // 보험/비자상태 생성 및 결과 응답은 위에서 처리됨 (중복 제거)
 
   } catch (error) {
     console.error('더미 데이터 생성 오류:', error);
@@ -379,20 +395,21 @@ export async function DELETE() {
   try {
     const dataSource = await initializeDataSource();
 
-    // 외래키 관계에 따라 자식 테이블부터 삭제 (QueryBuilder 사용)
-    await dataSource.getRepository(VisaStatus).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(Insurance).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(BankAccount).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(CreditCard).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(ErrorCode).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(SeasonWorker).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(Payment).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(Employer).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(LocalManagerGeneral).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(LocalManagerPublic).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(Admin).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(Country).createQueryBuilder().delete().execute();
-    await dataSource.getRepository(Region).createQueryBuilder().delete().execute();
+  // 외래키 관계에 따라 local_government를 가장 먼저 삭제
+  await dataSource.getRepository(LocalGovernment).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(VisaStatus).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Insurance).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(BankAccount).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(CreditCard).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(ErrorCode).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(SeasonWorker).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Payment).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Employer).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(LocalManagerGeneral).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(LocalManagerPublic).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Admin).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Country).createQueryBuilder().delete().execute();
+  await dataSource.getRepository(Region).createQueryBuilder().delete().execute();
 
     return NextResponse.json({
       success: true,
