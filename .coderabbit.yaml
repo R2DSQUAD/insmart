@@ -1,4 +1,4 @@
-.coderabbit.yaml
+# .coderabbit.yaml
 language: "ko-KR" # 한국말로 설정
 early_access: false
 reviews:
