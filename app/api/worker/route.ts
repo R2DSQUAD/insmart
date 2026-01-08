@@ -4,6 +4,11 @@ import { initializeDataSource } from '@/lib/data-source';
 import { SeasonWorker, Gender, RegisterStatus } from '@/lib/entity/SeasonWorker';
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
+/**
+ * Handle CORS preflight requests for the worker API.
+ *
+ * @returns A NextResponse with status 200, an empty JSON body, and Access-Control-Allow-* headers allowing all origins, the methods GET, POST, PUT, DELETE, OPTIONS, and the headers Content-Type and Authorization.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,
@@ -53,7 +58,21 @@ export function OPTIONS() {
  *         required: true
  */
 
-// GET - 목록 조회 또는 특정 노동자 조회
+/**
+ * Handle GET requests to retrieve a single worker or a paginated list of workers.
+ *
+ * Supports the following query parameters:
+ * - `id`: when present, returns the worker with the given `worker_id`.
+ * - `page`, `limit`: pagination controls used when `id` is absent (defaults: page=1, limit=10).
+ * - `search`: optional substring filter applied to `name` and `passport_id`.
+ *
+ * @param request - Incoming NextRequest containing query parameters as described above.
+ * @returns A NextResponse with a JSON body:
+ * - On success for a single worker: `{ success: true, data: SeasonWorker }`.
+ * - On success for a list: `{ success: true, data: SeasonWorker[], pagination: { page, limit, total, totalPages } }`.
+ * - If a requested worker is not found: 404 with `{ success: false, error: string }`.
+ * - On server error: 500 with `{ success: false, error: string }`.
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

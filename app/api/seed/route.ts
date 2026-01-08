@@ -9,6 +9,11 @@ import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 import { Region } from '@/lib/entity/Region';
 import { Country } from '@/lib/entity/Country';
 
+/**
+ * Handle CORS preflight requests for this route.
+ *
+ * @returns A JSON response with an empty body, status 200, and CORS headers allowing all origins, common HTTP methods, and Content-Type/Authorization headers.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,

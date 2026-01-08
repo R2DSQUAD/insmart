@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 import { LocalManagerPublic, AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
+/**
+ * Responds to CORS preflight requests with permissive headers.
+ *
+ * @returns A JSON NextResponse with status 200 and headers that allow any origin, the methods GET/POST/PUT/DELETE/OPTIONS, and the Content-Type and Authorization request headers.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,
@@ -40,7 +45,14 @@ export function OPTIONS() {
  *         required: true
  */
 
-// GET - 목록 조회 또는 특정 관리자 조회
+/**
+ * Retrieve public manager records: a single manager when `id` query param is present, or the full list otherwise.
+ *
+ * If `id` is provided, returns the matching manager or a 404 error when not found. If `id` is omitted, returns all managers ordered by `manager_public_id` descending along with a `count`.
+ *
+ * @param request - Incoming request; may include `id` as a query parameter to select a specific manager
+ * @returns A JSON object with `success`. On success: `data` contains the manager (for single lookup) or an array of managers and `count` (for list). On error: `error` contains a human-readable message. HTTP status codes used include 200 for success, 404 when a specific manager is not found, and 500 for internal errors.
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

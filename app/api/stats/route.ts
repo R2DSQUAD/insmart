@@ -6,6 +6,11 @@ import { LocalManagerGeneral } from '@/lib/entity/LocalManagerGeneral';
 import { Employer } from '@/lib/entity/Employer';
 import { SeasonWorker } from '@/lib/entity/SeasonWorker';
 
+/**
+ * Handle CORS preflight requests by returning a response that permits common origins, methods, and headers.
+ *
+ * @returns A NextResponse containing an empty JSON body with status 200 and CORS headers that allow all origins, the GET/POST/PUT/DELETE/OPTIONS methods, and the Content-Type and Authorization headers.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,

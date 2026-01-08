@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { AppDataSource } from '@/lib/data-source';
 
+/**
+ * Responds to CORS preflight requests with permissive Access-Control-Allow-* headers.
+ *
+ * @returns A NextResponse containing an empty JSON body, HTTP status 200, and headers:
+ * `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS`, and
+ * `Access-Control-Allow-Headers: Content-Type,Authorization`.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,
