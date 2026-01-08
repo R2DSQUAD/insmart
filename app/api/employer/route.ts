@@ -4,6 +4,11 @@ import { initializeDataSource } from '@/lib/data-source';
 import { Employer } from '@/lib/entity/Employer';
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
+/**
+ * Responds to CORS preflight requests with permissive CORS headers.
+ *
+ * @returns A JSON response with an empty body, HTTP status 200, and CORS headers allowing all origins, the methods GET/POST/PUT/DELETE/OPTIONS, and the headers Content-Type and Authorization.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,
@@ -49,7 +54,23 @@ export function OPTIONS() {
  *         required: true
  */
 
-// GET - 목록 조회 또는 특정 사업자 조회
+/**
+ * Retrieve employer data: a single employer when `id` is provided, or a paginated list otherwise.
+ *
+ * Accepts query parameters:
+ * - `id` — when present, returns the employer with that `employer_id`.
+ * - `page` — page number for list results (defaults to 1).
+ * - `limit` — items per page for list results (defaults to 10).
+ *
+ * The response includes CORS headers for single-employer responses and not-found errors.
+ *
+ * @param request - Incoming HTTP request containing query parameters (`id`, `page`, `limit`).
+ * @returns A JSON response object:
+ * - On success when `id` is provided: `{ success: true, data: employer }`.
+ * - On success when listing: `{ success: true, data: Employer[], pagination: { page, limit, total, totalPages } }`.
+ * - On not found: `{ success: false, error: string }` with HTTP 404.
+ * - On server error: `{ success: false, error: string }` with HTTP 500.
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

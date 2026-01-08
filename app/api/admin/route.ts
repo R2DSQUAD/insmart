@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 import { Admin } from '@/lib/entity/Admin';
 
-// CORS 프리플라이트 및 모든 응답에 CORS 헤더 추가
+/**
+ * Responds to CORS preflight requests with permissive Access-Control headers.
+ *
+ * @returns A NextResponse with status 200, an empty JSON body, and headers that allow all origins, methods GET/POST/PUT/DELETE/OPTIONS, and headers `Content-Type` and `Authorization`.
+ */
 export function OPTIONS() {
   return NextResponse.json({}, {
     status: 200,
@@ -42,7 +46,15 @@ export function OPTIONS() {
  *         required: true
  */
 
-// GET - 목록 조회 또는 특정 ID 조회
+/**
+ * Retrieve a single admin by `id` or return the list of all admins.
+ *
+ * @returns A NextResponse with JSON:
+ * - On success: `{ success: true, data }` where `data` is an admin object (when `id` is provided) or an array of admin objects.
+ * - If the requested admin is not found: `{ success: false, error }` with HTTP status `404`.
+ * - On internal error: `{ success: false, error }` with HTTP status `500`.
+ * Successful and 404 responses include CORS headers permitting common methods and headers.
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
