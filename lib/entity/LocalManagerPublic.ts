@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 
 export enum AccountStatus {
-  ACTIVE = 'Active',
-  ACTIVE_PENDING = 'ActivePending',
-  CANCEL = 'Cancel',
-  CANCEL_PENDING = 'CancelPending'
+  ACTIVE = '가입자',
+  ACTIVE_PENDING = '가입예정자',
+  CANCEL = '해지자',
+  CANCEL_PENDING = '해지예정자'
 }
 
 @Entity('local_manager_public')

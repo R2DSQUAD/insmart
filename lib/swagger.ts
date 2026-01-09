@@ -368,7 +368,7 @@ export const getApiDocs = async () => ({
                 properties: {
                   admin_id: { type: 'integer' },
                   password: { type: 'string' },
-                  account_status: { type: 'string', enum: ['Active', 'ActivePending', 'Cancel', 'CancelPending'] },
+                  account_status: { type: 'string', enum: ['가입자', '가입예정자', '해지자', '해지예정자'] },
                 },
               },
             },

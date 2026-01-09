@@ -14,7 +14,8 @@ export class BankAccount {
   @Column({ type: 'varchar', nullable: true, comment: '계좌 번호' })
   account_no: string;
 
-  @Column({ type: 'varchar', nullable: true, comment: '은행 이름' })
+
+  @Column({ type: 'varchar', length: 50, comment: '은행명' })
   bank_name: string;
 
   @ManyToOne('Payment', 'bankAccounts')

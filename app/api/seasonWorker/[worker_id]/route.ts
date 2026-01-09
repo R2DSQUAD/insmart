@@ -11,38 +11,44 @@ export async function GET(request: NextRequest, context: any) {
   const region = searchParams.get('region');
   const local_government = searchParams.get('local_government');
 
-  let isAdmin = false;
-  if (type === 'public' && pinCode && region && local_government) {
-    const dataSource = await initializeDataSource();
-    const repo = dataSource.getRepository('local_manager_public');
-    const user = await repo.createQueryBuilder('manager')
-      .innerJoin('manager.localGovernments', 'lg')
-      .where('lg.region_name = :region', { region })
-      .andWhere('lg.local_government_name = :local_government', { local_government })
-      .andWhere('manager.password = :pinCode', { pinCode })
-      .getOne();
-    if (user) isAdmin = true;
-  } else if (type === 'general' && pinCode && region && local_government) {
-    const dataSource = await initializeDataSource();
-    const repo = dataSource.getRepository('local_manager_general');
-    const user = await repo.createQueryBuilder('manager')
-      .innerJoin('manager.localGovernments', 'lg')
-      .where('lg.region_name = :region', { region })
-      .andWhere('lg.local_government_name = :local_government', { local_government })
-      .andWhere('manager.password = :pinCode', { pinCode })
-      .getOne();
-    if (user) isAdmin = true;
-  } else if (type === 'admin' && pinCode) {
-    const dataSource = await initializeDataSource();
-    const repo = dataSource.getRepository('admin');
-    const user = await repo.createQueryBuilder('admin')
-      .where('admin.password = :pinCode', { pinCode })
-      .getOne();
-    if (user) isAdmin = true;
-  }
+  // 본인 조회인 경우 (계절근로자가 자신의 정보 조회)
+  if (type === 'seasonWorker' || !type) {
+    // 권한 체크 없이 바로 조회 (본인 확인은 프론트엔드에서 처리)
+  } else {
+    // 관리자 권한 체크
+    let isAdmin = false;
+    if (type === 'public' && pinCode && region && local_government) {
+      const dataSource = await initializeDataSource();
+      const repo = dataSource.getRepository('local_manager_public');
+      const user = await repo.createQueryBuilder('manager')
+        .innerJoin('manager.localGovernments', 'lg')
+        .where('lg.region_name = :region', { region })
+        .andWhere('lg.local_government_name = :local_government', { local_government })
+        .andWhere('manager.password = :pinCode', { pinCode })
+        .getOne();
+      if (user) isAdmin = true;
+    } else if (type === 'general' && pinCode && region && local_government) {
+      const dataSource = await initializeDataSource();
+      const repo = dataSource.getRepository('local_manager_general');
+      const user = await repo.createQueryBuilder('manager')
+        .innerJoin('manager.localGovernments', 'lg')
+        .where('lg.region_name = :region', { region })
+        .andWhere('lg.local_government_name = :local_government', { local_government })
+        .andWhere('manager.password = :pinCode', { pinCode })
+        .getOne();
+      if (user) isAdmin = true;
+    } else if (type === 'admin' && pinCode) {
+      const dataSource = await initializeDataSource();
+      const repo = dataSource.getRepository('admin');
+      const user = await repo.createQueryBuilder('admin')
+        .where('admin.password = :pinCode', { pinCode })
+        .getOne();
+      if (user) isAdmin = true;
+    }
 
-  if (!isAdmin) {
-    return NextResponse.json({ success: false, error: '권한이 없습니다' }, { status: 403 });
+    if (!isAdmin) {
+      return NextResponse.json({ success: false, error: '권한이 없습니다' }, { status: 403 });
+    }
   }
 
   if (!workerId) {
@@ -52,9 +58,9 @@ export async function GET(request: NextRequest, context: any) {
   const dataSource = await initializeDataSource();
   const workerRepo = dataSource.getRepository('season_worker');
   const worker = await workerRepo.createQueryBuilder('worker')
-    .leftJoinAndSelect('worker.visaStatuses', 'visa')
-    .leftJoinAndSelect('worker.insurances', 'insurance')
-    .leftJoinAndSelect('worker.employer', 'employer')
+  .leftJoinAndSelect('worker.visaStatus', 'visa')
+  .leftJoinAndSelect('worker.insurances', 'insurance')
+  .leftJoinAndSelect('worker.employer', 'employer')
     .where('worker.worker_id = :workerId', { workerId })
     .getOne();
 
@@ -62,11 +68,9 @@ export async function GET(request: NextRequest, context: any) {
     return NextResponse.json({ success: false, error: '근로자를 찾을 수 없습니다' }, { status: 404 });
   }
 
-  const visa = worker.visaStatuses?.[0] || {};
   const insurance = worker.insurances?.[0] || {};
   const employer = worker.employer || {};
   const result = {
-    visa_status: visa.visa_code || '',
     사업주명: employer.owner_name || '',
     사업주연락처: employer.phone || '',
     증권번호: insurance.insurance_id || '',

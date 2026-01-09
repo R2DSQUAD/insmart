@@ -38,7 +38,7 @@ export default function IndexComponent() {
       <div className={styles.indexContainer}>
         <div className={styles.videoContainer}>
           <video autoPlay muted loop className={styles.video}>
-            <source src="/videos/seasonWorkerVideo.mp4" type="video/mp4" />
+            <source src="/videos/main_video.mp4" type="video/mp4" />
           </video>
         </div>
         <div className={styles.indexContent}>

@@ -110,7 +110,12 @@ export async function POST(request: NextRequest) {
       .andWhere('manager.password = :pinCode', { pinCode })
       .getOne();
     if (!user) return NextResponse.json({ success: false, error: '인증 실패' }, { status: 401 });
-    return NextResponse.json({ success: true, user, group: 'public' });
+    return NextResponse.json({ 
+      success: true, 
+      user, 
+      id: user.manager_public_id,
+      group: 'public' 
+    });
   }
   if (type === 'general') {
     // 일반형 관리자: region, local_government, pinCode 모두 확인 (local_government 테이블 조인)
@@ -123,7 +128,12 @@ export async function POST(request: NextRequest) {
       .andWhere('manager.password = :pinCode', { pinCode })
       .getOne();
     if (!user) return NextResponse.json({ success: false, error: '인증 실패' }, { status: 401 });
-    return NextResponse.json({ success: true, user, group: 'general' });
+    return NextResponse.json({ 
+      success: true, 
+      user, 
+      id: user.manager_general_id,
+      group: 'general' 
+    });
   }
   if (type === 'seasonWorker') {
     const repo = dataSource.getRepository(SeasonWorker);
@@ -170,7 +180,12 @@ export async function POST(request: NextRequest) {
       .getOne();
     
     if (!user) return NextResponse.json({ success: false, error: '본인 인증에 실패했습니다' }, { status: 401 });
-    return NextResponse.json({ success: true, user, group: 'seasonWorker' });
+    return NextResponse.json({ 
+      success: true, 
+      user, 
+      id: user.worker_id,
+      group: 'seasonWorker' 
+    });
   }
   if (type === 'employer') {
     const repo = dataSource.getRepository(Employer);
@@ -215,7 +230,12 @@ export async function POST(request: NextRequest) {
     // if (smsCode !== expectedCode) {
     //   return NextResponse.json({ success: false, error: 'SMS 인증 실패' }, { status: 401 });
     // }
-    return NextResponse.json({ success: true, user, group: 'employer' });
+    return NextResponse.json({ 
+      success: true, 
+      user, 
+      id: user.employer_id,
+      group: 'employer' 
+    });
   }
   return NextResponse.json({ success: false, error: '지원하지 않는 유형' }, { status: 400 });
 }

@@ -1,3 +1,20 @@
+-- [DB 연관구조 한글 설명]
+-- 관리자(admin) → 공공형/일반형 관리자(local_manager_public, local_manager_general)
+-- 공공형/일반형 관리자 → 자치단체(local_government)
+-- 자치단체 → 사업자(employer)
+-- 사업자(employer) → 계절근로자(season_worker)
+-- 계절근로자(season_worker) → 보험(insurance), 비자유형(visa_status), 계좌정보(bank_account)
+-- 결제방식(payment) → 계좌정보(bank_account), 카드정보(credit_card), 에러코드(error_code)
+-- 계좌정보(bank_account) → 은행(bank)
+--
+-- 주요 관계:
+-- 계절근로자: 사업자, 공공형 관리자, 비자유형, 계좌정보와 FK로 연결
+-- 보험: 계절근로자 FK
+-- 결제방식: 사업자 FK, 계좌/카드/에러코드와 연결
+-- 계좌정보: 결제방식 FK, 은행 FK
+-- 카드정보: 결제방식 FK
+-- 에러코드: 결제방식 FK
+-- 은행: 계좌정보에서 FK로 참조
 CREATE TABLE admin (
   admin_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '관리자 PK',
   password VARCHAR(255) NOT NULL COMMENT 'PIN코드',
