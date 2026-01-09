@@ -57,6 +57,15 @@ export class Payment {
   @Column({ type: 'datetime', nullable: true, comment: '결제 시간' })
   payment_date: Date;
 
+  @Column({ type: 'int', nullable: true, comment: '결제 대상 인원수' })
+  worker_count: number;
+
+  @Column({ type: 'int', nullable: true, comment: '외국인근로자 거주 개월' })
+  residence_months: number;
+
+  @Column({ type: 'bigint', nullable: true, comment: '보험료 최종금액' })
+  final_amount: number;
+
   @ManyToOne('Employer', 'payments')
   @JoinColumn({ name: 'employer_id' })
   employer: any;
@@ -67,6 +76,4 @@ export class Payment {
   @OneToMany('CreditCard', 'payment')
   creditCards: any[];
 
-  @OneToMany('ErrorCode', 'payment')
-  errorCodes: any[];
 }

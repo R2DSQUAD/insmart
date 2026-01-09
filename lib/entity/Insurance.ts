@@ -2,8 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 
 @Entity('insurance')
 export class Insurance {
+
   @PrimaryGeneratedColumn({ type: 'bigint', comment: '보험 PK' })
   insurance_id: number;
+
+  @Column({ type: 'varchar', nullable: false, comment: '증권번호' })
+  policy_number: string;
 
   @Column({ type: 'date', comment: '보험시작일' })
   insurance_start_date: Date;

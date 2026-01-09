@@ -75,8 +75,12 @@ export class SeasonWorker {
   @Column({ type: 'bigint', comment: '사업자 FK' })
   employer_id: number;
 
+
   @Column({ type: 'varchar', nullable: true, comment: '계좌번호' })
-  bank_account: string;
+  bank_account_no: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true, comment: '은행명' })
+  bank_name: string;
 
   @ManyToOne('LocalManagerPublic', 'workers')
   @JoinColumn({ name: 'manager_public_id' })
@@ -90,12 +94,14 @@ export class SeasonWorker {
   countries: any[];
 
 
-  @Column({ type: 'varchar', length: 20, comment: '비자유형 코드', nullable: true })
-  visa_code: string;
 
-  @ManyToOne('VisaStatus')
-  @JoinColumn({ name: 'visa_code', referencedColumnName: 'visa_code' })
-  visaStatus: any;
+  @Column({
+    type: 'enum',
+    enum: ['IMMIGRATION', 'MOU', 'MARRIAGE', 'PUBLIC', 'OTHER', 'NONE'],
+    default: 'NONE',
+    comment: '비자유형(이민자, MOU, 결혼이주, 공공형, 기타, NONE)'
+  })
+  visa_status: 'IMMIGRATION' | 'MOU' | 'MARRIAGE' | 'PUBLIC' | 'OTHER' | 'NONE';
 
   @OneToMany('Insurance', 'worker')
   insurances: any[];

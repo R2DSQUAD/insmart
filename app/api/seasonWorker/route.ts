@@ -99,13 +99,23 @@ export async function GET(request: NextRequest) {
 
     // 4. 근로자 조회 쿼리 구성
     const workerRepo = dataSource.getRepository(SeasonWorker);
-    
-    // 관계(Relation) 이름은 Entity 정의에 따라 다를 수 있습니다. (visaStatus vs visaStatuses)
-    // 여기서는 일반적인 N:1 관계를 가정하여 작성합니다.
     let qb = workerRepo.createQueryBuilder('worker')
-      .leftJoinAndSelect('worker.visaStatus', 'visa')
       .leftJoinAndSelect('worker.insurances', 'insurance')
-      .leftJoinAndSelect('worker.employer', 'employer');
+      .leftJoinAndSelect('worker.employer', 'employer')
+      .leftJoinAndSelect('worker.publicManager', 'publicManager');
+
+    // 권한 필터링: type에 따라 해당 관리자의 계절근로자만 조회
+    if (type === 'public' && region && local_government) {
+      qb = qb.innerJoin('publicManager.localGovernments', 'lg')
+        .where('lg.region_name = :region', { region })
+        .andWhere('lg.local_government_name = :local_government', { local_government });
+    } else if (type === 'general' && region && local_government) {
+      // 일반형 관리자: 사업주를 통한 간접 조회
+      qb = qb.innerJoin('employer.generalManager', 'generalManager')
+        .innerJoin('generalManager.localGovernments', 'lg')
+        .where('lg.region_name = :region', { region })
+        .andWhere('lg.local_government_name = :local_government', { local_government });
+    }
 
     // 동적 필터링
     if (name) qb = qb.andWhere('worker.name LIKE :name', { name: `%${name}%` });
@@ -133,26 +143,39 @@ export async function GET(request: NextRequest) {
 
     // 5. 결과 매핑
     const result = workers.map(worker => {
-      // 관계 데이터가 없을 경우를 대비해 Optional Chaining 사용
-      const visa = worker.visaStatus?.[0] || {}; 
       const insurance = worker.insurances?.[0] || {};
       const employer = worker.employer || {};
-
+      const 소속유형 = type === 'public' ? '공공형' : type === 'general' ? '일반형' : '';
+      let 해지신청일 = '';
+      let 해지일 = '';
+      if (worker.account_status === '해지자' || worker.account_status === '해지예정자') {
+        해지신청일 = insurance.cancellation_request_date || '';
+        if (worker.account_status === '해지자') {
+          해지일 = insurance.cancellation_date || '';
+        }
+      }
       return {
-        id: worker.worker_id, // 고유 ID 포함 권장
-        visa_status: visa.visa_code || '',
+        id: worker.worker_id,
+        visa_status: worker.visa_status || '',
+        bank_account_no: worker.bank_account_no || '',
+        bank_name: worker.bank_name || '',
         사업주명: employer.owner_name || '',
         사업주연락처: employer.phone || '',
-        증권번호: insurance.insurance_id || '',
+        증권번호: insurance.policy_number || '',
         이름: worker.name,
         여권번호: worker.passport_id,
         국가: worker.country_code,
         성별: worker.gender,
         생년월일: worker.birth_date,
-        보험기간: (insurance.insurance_start_date && insurance.insurance_end_date) 
-          ? `${insurance.insurance_start_date}~${insurance.insurance_end_date}` 
+        보험기간: (insurance.insurance_start_date && insurance.insurance_end_date)
+          ? `${insurance.insurance_start_date}~${insurance.insurance_end_date}`
           : '',
-        가입상태: worker.account_status
+        가입상태: worker.account_status,
+        행정구역: region || '',
+        지자체: local_government || '',
+        소속유형: 소속유형,
+        해지신청일,
+        해지일
       };
     });
 
@@ -188,15 +211,17 @@ export async function POST(request: NextRequest) {
       account_status,
       manager_public_id,
       employer_id,
-      bank_account
+      bank_account_no,
+      bank_name,
+      visa_status
     } = body;
 
     // 필수 필드 검증
-    if (!password || !country_code || !passport_id || !name || !birth_date || !gender || !account_status || !manager_public_id || !employer_id) {
+    if (!password || !country_code || !passport_id || !name || !birth_date || !gender || !account_status || !manager_public_id || !employer_id || !bank_account_no || !bank_name || !visa_status) {
       return NextResponse.json({
         success: false,
         error: '필수 필드가 누락되었습니다',
-        required: ['password', 'country_code', 'passport_id', 'name', 'birth_date', 'gender', 'account_status', 'manager_public_id', 'employer_id']
+        required: ['password', 'country_code', 'passport_id', 'name', 'birth_date', 'gender', 'account_status', 'manager_public_id', 'employer_id', 'bank_account_no', 'bank_name', 'visa_status']
       }, { status: 400 });
     }
 
@@ -216,7 +241,9 @@ export async function POST(request: NextRequest) {
       account_status: account_status as AccountStatus,
       manager_public_id,
       employer_id,
-      bank_account
+      bank_account_no,
+      bank_name,
+      visa_status
     });
 
     const savedWorker = await workerRepo.save(newWorker);
@@ -269,7 +296,8 @@ export async function PUT(request: NextRequest) {
     const allowedFields = [
       'password', 'country_code', 'passport_id', 'passport_expired',
       'name', 'birth_date', 'gender', 'register_status', 'resident_id',
-      'account_status', 'manager_public_id', 'employer_id', 'bank_account'
+      'account_status', 'manager_public_id', 'employer_id',
+      'bank_account_no', 'bank_name', 'visa_status'
     ];
 
     allowedFields.forEach(field => {
@@ -515,7 +543,7 @@ export async function DELETE(request: NextRequest) {
  *                 description: 외국인등록번호
  *               account_status:
  *                 type: string
- *                 enum: [Active, ActivePending, Cancel, CancelPending]
+ *                 enum: [가입자, 가입예정자, 해지자, 해지예정자]
  *                 description: 가입상태
  *               manager_public_id:
  *                 type: integer
@@ -575,7 +603,7 @@ export async function DELETE(request: NextRequest) {
  *                 type: string
  *               account_status:
  *                 type: string
- *                 enum: [Active, ActivePending, Cancel, CancelPending]
+ *                 enum: [가입자, 가입예정자, 해지자, 해지예정자]
  *               manager_public_id:
  *                 type: integer
  *               employer_id:

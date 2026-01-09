@@ -90,13 +90,27 @@ export default function Login() {
       });
       const data = await res.json();
       if (data.success) {
-  alert("로그인 성공");
-  // 인증정보를 쿠키에 저장 (만료 1일)
-  const expires = new Date(Date.now() + 86400 * 1000).toUTCString();
-  document.cookie = `type=${encodeURIComponent(userType)}; expires=${expires}; path=/`;
-  document.cookie = `pinCode=${encodeURIComponent(pin)}; expires=${expires}; path=/`;
-  document.cookie = `region=${encodeURIComponent(regionName)}; expires=${expires}; path=/`;
-  document.cookie = `local_government=${encodeURIComponent(localGovName)}; expires=${expires}; path=/`;
+        alert("로그인 성공");
+        
+        // localStorage에 인증 정보 저장 (대시보드에서 사용)
+        const authData = {
+          type: userType,
+          id: data.id || data.user?.id || '', // API에서 반환된 사용자 ID
+          pinCode: pin,
+          region: regionName,
+          local_government: localGovName
+        };
+        
+        console.log("💾 localStorage 저장:", authData);
+        localStorage.setItem('authData', JSON.stringify(authData));
+        
+        // 쿠키에도 저장 (만료 1일)
+        const expires = new Date(Date.now() + 86400 * 1000).toUTCString();
+        document.cookie = `type=${encodeURIComponent(userType)}; expires=${expires}; path=/`;
+        document.cookie = `pinCode=${encodeURIComponent(pin)}; expires=${expires}; path=/`;
+        document.cookie = `region=${encodeURIComponent(regionName)}; expires=${expires}; path=/`;
+        document.cookie = `local_government=${encodeURIComponent(localGovName)}; expires=${expires}; path=/`;
+        
         // userType별로 정확히 분기
         if (userType === "seasonWorker") {
           router.push("/dashboard/seasonWorker");
@@ -126,7 +140,63 @@ export default function Login() {
     <div className={styles.loginContainer}>
       <h1>통합 로그인 테스트</h1>
       {step === 1 && (
-        <form className={styles.loginForm} onSubmit={e => e.preventDefault()}>
+        <form className={styles.loginForm} onSubmit={async (e) => {
+          e.preventDefault();
+          // 필수 값 검증
+          if (!selectedRegion || !selectedLocalGov) {
+            alert("행정지역과 자치단체를 선택해주세요.");
+            return;
+          }
+          if (!pin.trim()) {
+            alert("핀코드를 입력해주세요.");
+            return;
+          }
+          setLoading(true);
+          const body: any = {
+            type: userType,
+            region: regionName,
+            local_government: localGovName,
+            pinCode: pin
+          };
+          // userLogin일 경우 1차 인증임을 명시
+          if (pathname === "/userLogin") {
+            body.step = 1;
+          }
+          try {
+            const res = await fetch("/api/auth", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.success) {
+              if (pathname === "/adminLogin") {
+                alert("로그인 성공");
+                // 인증정보를 쿠키에 저장 (만료 1일)
+                const expires = new Date(Date.now() + 86400 * 1000).toUTCString();
+                document.cookie = `type=${encodeURIComponent(userType)}; expires=${expires}; path=/`;
+                document.cookie = `pinCode=${encodeURIComponent(pin)}; expires=${expires}; path=/`;
+                document.cookie = `region=${encodeURIComponent(regionName)}; expires=${expires}; path=/`;
+                document.cookie = `local_government=${encodeURIComponent(localGovName)}; expires=${expires}; path=/`;
+                // 관리자 로그인 성공 시 관리자 페이지로 이동
+                if (userType === "public") {
+                  router.push("/dashboard/manager/public");
+                } else if (userType === "general") {
+                  router.push("/dashboard/manager/general");
+                }
+              } else if (pathname === "/userLogin") {
+                alert("로그인 성공");
+                setStep(2);
+              }
+            } else {
+              alert(`인증 실패: ${data.error || data.error_context || data.message || "알 수 없는 오류"}`);
+            }
+          } catch (e) {
+            alert("네트워크 오류");
+          } finally {
+            setLoading(false);
+          }
+        }}>
           <div>
             <select value={userType} onChange={e => setUserType(e.target.value)}>
               {userTypeOptions.map(opt => (
@@ -167,54 +237,13 @@ export default function Login() {
             ))}
           </select>
           <input
-            type="text"
+            type="password"
             placeholder="핀코드 입력"
             value={pin}
             onChange={e => setPin(e.target.value)}
           />
           <button
-            type="button"
-            onClick={async () => {
-              setLoading(true);
-              const body: any = {
-                type: userType,
-                region: regionName,
-                local_government: localGovName,
-                pinCode: pin
-              };
-              // userLogin일 경우 1차 인증임을 명시
-              if (pathname === "/userLogin") {
-                body.step = 1;
-              }
-              try {
-                const res = await fetch("/api/auth", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                if (data.success) {
-                  if (pathname === "/adminLogin") {
-                    alert("로그인 성공");
-                    // 관리자 로그인 성공 시 관리자 페이지로 이동
-                    if (userType === "public") {
-                      router.push("/dashboard/manager/public");
-                    } else if (userType === "general") {
-                      router.push("/dashboard/manager/general");
-                    }
-                  } else if (pathname === "/userLogin") {
-                    alert("로그인 성공");
-                    setStep(2);
-                  }
-                } else {
-                  alert(`인증 실패: ${data.error || data.error_context || data.message || "알 수 없는 오류"}`);
-                }
-              } catch (e) {
-                alert("네트워크 오류");
-              } finally {
-                setLoading(false);
-              }
-            }}
+            type="submit"
             disabled={!selectedRegion || !selectedLocalGov || !pin || loading}
           >
             핀번호 인증
