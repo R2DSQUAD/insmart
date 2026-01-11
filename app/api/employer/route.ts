@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 import { Employer } from '@/lib/entity/Employer';
+import { SeasonWorker } from '@/lib/entity/SeasonWorker';
+import { Insurance } from '@/lib/entity/Insurance';
 import { AccountStatus } from '@/lib/entity/LocalManagerPublic';
 
 export function OPTIONS() {
@@ -134,10 +136,28 @@ export async function GET(request: NextRequest) {
       const creditCard = payment.creditCards?.[0] || {};
       const bankAccount = payment.bankAccounts?.[0] || {};
       
-      // 보험 총금액 계산 (해당 사업주의 모든 계절근로자의 보험금액 합산)
-      const totalInsuranceAmount = (employer.workers || []).reduce((sum: number, worker: any) => {
-        const insurances = worker.insurances || [];
-        const workerTotal = insurances.reduce((wSum: number, ins: any) => wSum + (ins.insurance_fee || 0), 0);
+      // 보험 총금액 계산 (요청사항: 남자 1개월당 10000원, 여자 1개월당 11000원)
+      const MALE_MONTH_FEE = 10000;
+      const FEMALE_MONTH_FEE = 11000;
+
+      const calcMonthsInclusive = (startDate?: Date, endDate?: Date) => {
+        if (!startDate || !endDate) return 0;
+        const s = new Date(startDate);
+        const e = new Date(endDate);
+        const yearDiff = e.getFullYear() - s.getFullYear();
+        const monthDiff = e.getMonth() - s.getMonth();
+        // 포함 계산: 예) 2024-01 ~ 2024-05 = 5개월
+        const months = yearDiff * 12 + monthDiff + 1;
+        return Math.max(0, months);
+      };
+
+      const totalInsuranceAmount = (employer.workers || []).reduce((sum: number, worker: SeasonWorker) => {
+        const insurances: Insurance[] = (worker.insurances || []) as Insurance[];
+        const workerTotal = insurances.reduce((wSum: number, ins: Insurance) => {
+          const months = calcMonthsInclusive(ins.insurance_start_date as unknown as Date, ins.insurance_end_date as unknown as Date);
+          const feePerMonth = worker.gender === 'M' ? MALE_MONTH_FEE : worker.gender === 'F' ? FEMALE_MONTH_FEE : MALE_MONTH_FEE;
+          return wSum + months * feePerMonth;
+        }, 0);
         return sum + workerTotal;
       }, 0);
 
@@ -157,7 +177,7 @@ export async function GET(request: NextRequest) {
         이름: employer.owner_name,
         결제방식: payment.payment_method || '',
         카드회사: creditCard.name || '',
-        은행이름: bankAccount.bank?.bank_name || '',
+        은행이름: bankAccount.bank_name || '',
         카드번호: creditCard.card_no || '',
         계좌번호: bankAccount.account_no || '',
         총금액: totalInsuranceAmount,
