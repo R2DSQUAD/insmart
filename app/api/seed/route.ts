@@ -18,6 +18,7 @@ import { CreditCard } from '@/lib/entity/CreditCard';
 export function OPTIONS() {
   return NextResponse.json({}, { status: 200 });
 }
+
 /**
  * @swagger
  * tags:
@@ -118,6 +119,21 @@ export async function POST() {
   try {
     const dataSource = await initializeDataSource();
 
+    // 안전한 더미 초기화를 위해 기존 데이터를 FK 제약 순서에 맞춰 먼저 삭제
+    // (기존에 남아있는 데이터가 있을 경우 TRUNCATE/clear로 인해 오류 발생할 수 있음)
+    await dataSource.getRepository(Insurance).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(BankAccount).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(CreditCard).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(SeasonWorker).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Payment).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Employer).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(LocalGovernment).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(LocalManagerGeneral).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(LocalManagerPublic).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Admin).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Country).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(Region).createQueryBuilder().delete().execute();
+
     // 1. Region 데이터 생성 (서울특별시, 경기도만)
     const regionRepo = dataSource.getRepository(Region);
     const regions = await regionRepo.save([
@@ -127,7 +143,7 @@ export async function POST() {
 
     // 2. Country 데이터 생성 (중복 방지: 테이블 비우기)
     const countryRepo = dataSource.getRepository(Country);
-    await countryRepo.clear();
+    await countryRepo.createQueryBuilder().delete().execute();
     const countries = await countryRepo.save([
       { country_code: 'VNM', country_name: '베트남' },
       { country_code: 'THA', country_name: '태국' },
@@ -155,7 +171,7 @@ export async function POST() {
     for (let i = 0; i < 10; i++) {
         publicManagersData.push({
             admin_id: admins[i % 3].admin_id,
-            password: `public${String(i).repeat(4)}`, // public0000, public1111...
+            password: `public${String(i).repeat(4)}`,
             account_status: AccountStatus.ACTIVE
         });
     }
@@ -173,7 +189,7 @@ export async function POST() {
     }
     const generalManagers = await generalManagerRepo.save(generalManagersData);
 
-    // 6. LocalGovernment 데이터 생성 (서울특별시 노원구, 서울특별시 용산구, 경기도 의정부, 경기도 남양주)
+    // 6. LocalGovernment 데이터 생성
     const localGovernmentRepo = dataSource.getRepository('local_government');
     const localGovernments = await localGovernmentRepo.save([
       { region_id: regions[0].region_id, manager_public_id: publicManagers[0].manager_public_id, manager_general_id: generalManagers[0].manager_general_id, region_name: '서울특별시', local_government_name: '서울특별시 노원구' },
@@ -182,17 +198,13 @@ export async function POST() {
       { region_id: regions[1].region_id, manager_public_id: publicManagers[3].manager_public_id, manager_general_id: generalManagers[3].manager_general_id, region_name: '경기도', local_government_name: '경기도 남양주시' }
     ]);
 
-    // 7. Employer 데이터 생성 (지자체별 50명씩)
+    // 7. Employer 데이터 생성
     const employerRepo = dataSource.getRepository(Employer);
     const employersList = [];
-    const localGovNames = [
-      '서울특별시 노원구',
-      '서울특별시 용산구',
-      '경기도 의정부시',
-      '경기도 남양주시'
-    ];
+    const localGovNames = ['서울특별시 노원구', '서울특별시 용산구', '경기도 의정부시', '경기도 남양주시'];
+    
     for (let govIdx = 0; govIdx < localGovernments.length; govIdx++) {
-      const isPublic = govIdx < 2; // 0,1: 공공형 / 2,3: 일반형
+      const isPublic = govIdx < 2;
       const typeLabel = isPublic ? '공공형' : '일반형';
       for (let i = 0; i < 50; i++) {
         employersList.push({
@@ -211,33 +223,31 @@ export async function POST() {
     }
     const employers = await employerRepo.save(employersList);
 
-
-    // 8. VisaStatus 더미 데이터 생성
-
-
     // 9. SeasonWorker 데이터 생성 (지자체별 50명씩)
     const workerRepo = dataSource.getRepository(SeasonWorker);
     const workers = [];
-    // visa_status ENUM 값 목록
     const visaStatusEnum = ['IMMIGRATION', 'MOU', 'MARRIAGE', 'PUBLIC', 'OTHER', 'NONE'];
     const bankNames = ['신한은행', '우리은행', '국민은행', '하나은행', '농협은행'];
+    
     for (let govIdx = 0; govIdx < localGovernments.length; govIdx++) {
       const isPublic = govIdx < 2;
-      const typeLabel = isPublic ? '공공형' : '일반형';
-      // 고정 영어 이름 배열
       const englishNames = [
         'James','John','Robert','Michael','William','David','Richard','Joseph','Thomas','Charles',
         'Christopher','Daniel','Matthew','Anthony','Mark','Donald','Steven','Paul','Andrew','Joshua',
         'Mary','Patricia','Jennifer','Linda','Elizabeth','Barbara','Susan','Jessica','Sarah','Karen',
         'Nancy','Lisa','Margaret','Betty','Sandra','Ashley','Kimberly','Emily','Donna','Michelle'
       ];
+      
       for (let i = 0; i < 50; i++) {
-        let status = AccountStatus.ACTIVE;
-        if (i >= 20 && i < 35) status = AccountStatus.CANCEL;
-        if (i >= 35) status = AccountStatus.CANCEL_PENDING;
+        // [수정] 가입예정자(REGISTER_PENDING) 로직 추가
+        let status = AccountStatus.ACTIVE;       // 0 ~ 19 (20명)
+        if (i >= 20 && i < 30) status = AccountStatus.CANCEL;         // 20 ~ 29 (10명)
+        if (i >= 30 && i < 40) status = AccountStatus.CANCEL_PENDING; // 30 ~ 39 (10명)
+        if (i >= 40) status = AccountStatus.ACTIVE_PENDING;         // 40 ~ 49 (10명) - 가입예정자 추가
+        
         const employerIndex = govIdx * 50 + i;
-        // 고정 영어 이름 선택 (배열 인덱스 고정)
         const fixedName = englishNames[i % englishNames.length] + (i+1);
+        
         workers.push({
           password: 'worker' + (govIdx + 1) + '234',
           country_code: isPublic ? 'VNM' : 'PHL',
@@ -260,15 +270,14 @@ export async function POST() {
     }
     const savedWorkers = await workerRepo.save(workers);
 
-    // 10. Insurance 데이터 생성 (저장된 모든 근로자에 대해)
+    // 10. Insurance 데이터 생성
     const insuranceRepo = dataSource.getRepository(Insurance);
     const insurances = [];
     const nowYear = new Date().getFullYear();
-    const policyNumberBase = `${nowYear}-`;
+    const fixedPolicyNumber = `${nowYear}-00001`;
     
     for (let i = 0; i < savedWorkers.length; i++) {
       const worker = savedWorkers[i];
-      // 보험 시작/종료일은 기존 로직 유지
       const startDate = new Date();
       startDate.setMonth(startDate.getMonth() - (i % 12));
       const endDate = new Date(startDate);
@@ -277,26 +286,23 @@ export async function POST() {
       const isCancelled = worker.account_status === AccountStatus.CANCEL;
       const isCancelPending = worker.account_status === AccountStatus.CANCEL_PENDING;
 
-      // 오늘 기준으로 해지자라면 해지신청일은 오늘-10일~오늘-1일 사이, 해지일은 오늘-1일~오늘 사이로 랜덤 생성
       let cancellationRequestDate = null;
       let cancellationDate = null;
+      
       if (isCancelled) {
         const today = new Date();
-        // 신청일: 오늘-10일~오늘-1일
         const reqOffset = Math.floor(Math.random() * 10) + 1;
         cancellationRequestDate = new Date(today.getTime() - reqOffset * 24 * 60 * 60 * 1000);
-        // 해지일: 신청일~오늘 (최대 10일 차이)
         const cancelOffset = Math.floor(Math.random() * (11 - reqOffset));
         cancellationDate = new Date(cancellationRequestDate.getTime() + cancelOffset * 24 * 60 * 60 * 1000);
       } else if (isCancelPending) {
-        // 해지예정자는 신청일만 오늘-7일~오늘-1일 사이로 랜덤
         const today = new Date();
         const reqOffset = Math.floor(Math.random() * 7) + 1;
         cancellationRequestDate = new Date(today.getTime() - reqOffset * 24 * 60 * 60 * 1000);
       }
       
       const insurance = insuranceRepo.create({
-        policy_number: policyNumberBase + String(i + 1).padStart(5, '0'),
+        policy_number: fixedPolicyNumber,
         insurance_start_date: startDate,
         insurance_end_date: endDate,
         cancellation_request_date: cancellationRequestDate,
@@ -306,7 +312,7 @@ export async function POST() {
       insurances.push(await insuranceRepo.save(insurance));
     }
 
-    // 11. Payment 더미 데이터 생성 (모든 사업주에 대해)
+    // 11. Payment 데이터 생성 (생략 - 기존 로직 유지)
     const paymentRepo = dataSource.getRepository(Payment);
     const payments = [];
     for (let i = 0; i < employers.length; i++) {
@@ -329,7 +335,7 @@ export async function POST() {
       payments.push(await paymentRepo.save(payment));
     }
 
-    // 11-1. CreditCard 더미 데이터 생성
+    // 11-1, 11-2 카드/계좌 생성 (생략 - 기존 로직 유지)
     const creditCardRepo = dataSource.getRepository(CreditCard);
     const cardCompanies = ['신한카드', '삼성카드', '현대카드', 'KB국민카드', '하나카드'];
     for (let i = 0; i < payments.length; i++) {
@@ -343,12 +349,10 @@ export async function POST() {
       }
     }
 
-    // 11-2. BankAccount 더미 데이터 생성 (은행명 직접 저장)
     const bankAccountRepo = dataSource.getRepository(BankAccount);
     for (let i = 0; i < payments.length; i++) {
       if (payments[i].payment_method === PaymentMethod.ACCOUNT) {
         const accountNumber = `${110 + (i % 100)}-${200 + (i % 100)}-${300000 + (i % 100)}`;
-        // 은행명은 위에서 정의한 bankNames 재사용
         const bankName = bankNames[i % bankNames.length];
         await bankAccountRepo.save({
           payment_id: payments[i].payment_id,
@@ -359,8 +363,6 @@ export async function POST() {
       }
     }
 
-
-    // 결과 요약
     const summary = {
       regions: regions.length,
       countries: countries.length,
@@ -372,7 +374,7 @@ export async function POST() {
       workers: savedWorkers.length,
       insurances: insurances.length,
       payments: payments.length,
-      message: '더미 데이터 생성 완료 (사업주 100명, 계절근로자 100명 등)'
+      message: '더미 데이터 생성 완료 (가입예정자 포함)'
     };
 
     return NextResponse.json({
@@ -385,8 +387,9 @@ export async function POST() {
           general: 50
         },
         insurances: {
-          active: insurances.filter((ins: any) => !ins.cancellation_date).length,
-          cancelled: insurances.filter((ins: any) => ins.cancellation_date).length
+          // [수정] : any -> : Insurance 로 변경
+          active: insurances.filter((ins: Insurance) => !ins.cancellation_date).length,
+          cancelled: insurances.filter((ins: Insurance) => ins.cancellation_date).length
         }
       }
     }, { status: 201 });
@@ -401,19 +404,17 @@ export async function POST() {
   }
 }
 
-// 더미 데이터 삭제 (개발용)
 export async function DELETE() {
   try {
     const dataSource = await initializeDataSource();
-
-    // 외래키 관계에 따라 local_government를 가장 먼저 삭제해야 하는 경우 등 고려
-    await dataSource.getRepository(LocalGovernment).createQueryBuilder().delete().execute();
+    // FK 제약이 있는 테이블부터 먼저 삭제
     await dataSource.getRepository(Insurance).createQueryBuilder().delete().execute();
     await dataSource.getRepository(BankAccount).createQueryBuilder().delete().execute();
     await dataSource.getRepository(CreditCard).createQueryBuilder().delete().execute();
     await dataSource.getRepository(SeasonWorker).createQueryBuilder().delete().execute();
     await dataSource.getRepository(Payment).createQueryBuilder().delete().execute();
     await dataSource.getRepository(Employer).createQueryBuilder().delete().execute();
+    await dataSource.getRepository(LocalGovernment).createQueryBuilder().delete().execute();
     await dataSource.getRepository(LocalManagerGeneral).createQueryBuilder().delete().execute();
     await dataSource.getRepository(LocalManagerPublic).createQueryBuilder().delete().execute();
     await dataSource.getRepository(Admin).createQueryBuilder().delete().execute();
@@ -424,12 +425,7 @@ export async function DELETE() {
       success: true,
       message: '모든 더미 데이터가 삭제되었습니다'
     });
-
   } catch (error) {
-    console.error('더미 데이터 삭제 오류:', error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 }

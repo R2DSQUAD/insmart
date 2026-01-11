@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeDataSource } from '@/lib/data-source';
 // 엔티티들을 직접 Import 해야 합니다.
 import { SeasonWorker, Gender, RegisterStatus } from '@/lib/entity/SeasonWorker';
+import { Country } from '@/lib/entity/Country';
 import { LocalManagerPublic, AccountStatus } from '@/lib/entity/LocalManagerPublic';
 import { LocalManagerGeneral } from '@/lib/entity/LocalManagerGeneral';
 import { Admin } from '@/lib/entity/Admin';
@@ -102,7 +103,8 @@ export async function GET(request: NextRequest) {
     let qb = workerRepo.createQueryBuilder('worker')
       .leftJoinAndSelect('worker.insurances', 'insurance')
       .leftJoinAndSelect('worker.employer', 'employer')
-      .leftJoinAndSelect('worker.publicManager', 'publicManager');
+      .leftJoinAndSelect('worker.publicManager', 'publicManager')
+      .leftJoinAndSelect('worker.country', 'country');
 
     // 권한 필터링: type에 따라 해당 관리자의 계절근로자만 조회
     if (type === 'public' && region && local_government) {
@@ -143,15 +145,15 @@ export async function GET(request: NextRequest) {
 
     // 5. 결과 매핑
     const result = workers.map(worker => {
-      const insurance = worker.insurances?.[0] || {};
-      const employer = worker.employer || {};
+      const insurance: import('@/lib/entity/Insurance').Insurance | undefined = worker.insurances?.[0];
+      const employer: import('@/lib/entity/Employer').Employer | undefined = worker.employer;
       const 소속유형 = type === 'public' ? '공공형' : type === 'general' ? '일반형' : '';
       let 해지신청일 = '';
       let 해지일 = '';
       if (worker.account_status === '해지자' || worker.account_status === '해지예정자') {
-        해지신청일 = insurance.cancellation_request_date || '';
+        해지신청일 = insurance?.cancellation_request_date ? String(insurance.cancellation_request_date) : '';
         if (worker.account_status === '해지자') {
-          해지일 = insurance.cancellation_date || '';
+          해지일 = insurance?.cancellation_date ? String(insurance.cancellation_date) : '';
         }
       }
       return {
@@ -159,23 +161,23 @@ export async function GET(request: NextRequest) {
         visa_status: worker.visa_status || '',
         bank_account_no: worker.bank_account_no || '',
         bank_name: worker.bank_name || '',
-        사업주명: employer.owner_name || '',
-        사업주연락처: employer.phone || '',
-        증권번호: insurance.policy_number || '',
-        이름: worker.name,
-        여권번호: worker.passport_id,
-        국가: worker.country_code,
-        성별: worker.gender,
-        생년월일: worker.birth_date,
-        보험기간: (insurance.insurance_start_date && insurance.insurance_end_date)
+        owner_name: employer.owner_name || '',
+        owner_phone: employer.phone || '',
+        policy_number: insurance?.policy_number || '',
+        name: worker.name,
+        passport_id: worker.passport_id,
+        country: (worker as SeasonWorker & { country?: Country }).country?.country_name || worker.country_code || '',
+        gender: worker.gender,
+        birth_date: worker.birth_date,
+        insurance_period: (insurance?.insurance_start_date && insurance?.insurance_end_date)
           ? `${insurance.insurance_start_date}~${insurance.insurance_end_date}`
           : '',
-        가입상태: worker.account_status,
-        행정구역: region || '',
-        지자체: local_government || '',
-        소속유형: 소속유형,
-        해지신청일,
-        해지일
+        account_status: worker.account_status,
+        region: region || '',
+        local_government: local_government || '',
+        affiliation_type: 소속유형,
+        cancellation_request_date: 해지신청일,
+        cancellation_date: 해지일
       };
     });
 
@@ -292,7 +294,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // 수정 가능한 필드만 업데이트
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     const allowedFields = [
       'password', 'country_code', 'passport_id', 'passport_expired',
       'name', 'birth_date', 'gender', 'register_status', 'resident_id',
@@ -300,7 +302,7 @@ export async function PUT(request: NextRequest) {
       'bank_account_no', 'bank_name', 'visa_status'
     ];
 
-    allowedFields.forEach(field => {
+    allowedFields.forEach((field: string) => {
       if (body[field] !== undefined) {
         updateData[field] = body[field];
       }

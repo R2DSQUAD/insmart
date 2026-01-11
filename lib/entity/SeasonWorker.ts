@@ -1,5 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { AccountStatus } from './LocalManagerPublic';
+import { AccountStatus, LocalManagerPublic } from './LocalManagerPublic';
+import { Country } from './Country';
+import { Employer } from './Employer';
+import { Insurance } from './Insurance';
 
 export enum Gender {
   MALE = 'M',
@@ -17,6 +20,9 @@ export enum RegisterStatus {
 
 @Entity('season_worker')
 export class SeasonWorker {
+  @ManyToOne(() => Country, { eager: false })
+  @JoinColumn({ name: 'country_code', referencedColumnName: 'country_code' })
+  country: Country;
   @PrimaryGeneratedColumn({ name: 'worker_id', type: 'bigint', comment: '노동자 PK' })
   worker_id: number;
 
@@ -82,18 +88,15 @@ export class SeasonWorker {
   @Column({ type: 'varchar', length: 50, nullable: true, comment: '은행명' })
   bank_name: string;
 
-  @ManyToOne('LocalManagerPublic', 'workers')
+
+  @ManyToOne(() => LocalManagerPublic, (manager) => manager.workers)
   @JoinColumn({ name: 'manager_public_id' })
-  publicManager: any;
+  publicManager: LocalManagerPublic;
 
-  @ManyToOne('Employer', 'workers')
+
+  @ManyToOne(() => Employer, (employer) => employer.workers)
   @JoinColumn({ name: 'employer_id' })
-  employer: any;
-
-  @OneToMany('Country', 'worker')
-  countries: any[];
-
-
+  employer: Employer;
 
   @Column({
     type: 'enum',
@@ -103,6 +106,7 @@ export class SeasonWorker {
   })
   visa_status: 'IMMIGRATION' | 'MOU' | 'MARRIAGE' | 'PUBLIC' | 'OTHER' | 'NONE';
 
-  @OneToMany('Insurance', 'worker')
-  insurances: any[];
+
+  @OneToMany(() => Insurance, (insurance) => insurance.worker)
+  insurances: Insurance[];
 }
