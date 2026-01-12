@@ -5,12 +5,13 @@
     width: 100%;
     box-sizing: border-box;
     padding: 65px 150px;
+    justify-content: center;
 }
 
 .indexContainer {
     display: flex;
     width: 100%;
-    justify-content: center;
+    max-width: 1113px;
 }
 
 .video {

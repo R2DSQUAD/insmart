@@ -1,0 +1,83 @@
+.selectWrapper {
+  position: relative;
+  font-size: 16px;
+  width: 100%;
+}
+
+.selectBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #6D6C6C;
+  background: #FFF;
+  padding: 0 20px 0 13px;
+  cursor: pointer;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.selectBox:focus, .selectBox:active {
+  border: 1.5px solid #007CFF;
+  box-shadow: 0 2px 8px 0 rgba(0, 124, 255, 0.10);
+  outline: none;
+}
+
+.selectedValue {
+  color: #25323D;
+  font-weight: 500;
+  line-height: 146%;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.options {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 667px;
+  min-width: 100%;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  background: #FFF;
+  border: 1px solid #F0F0F6;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.08);
+  z-index: 10;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  list-style: none;
+}
+
+.option {
+  padding: 12px 20px;
+  color: #25323D;
+  cursor: pointer;
+  background: #FFF;
+  transition: background 0.15s;
+  height: 28px;
+  box-sizing: border-box;
+  display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+      padding: 20px 20px 20px 30px;
+}
+
+.option:hover,
+.option:focus {
+  background: #F2FAFF;
+}
+
+.selected {
+  background: #F2FAFF;
+  font-weight: 600;
+}

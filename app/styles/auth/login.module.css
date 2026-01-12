@@ -1,26 +1,126 @@
-.loginContainer {
+.login {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	min-height: 80vh;
-	font-size: 1.2rem;
+	background: linear-gradient(90deg, #E3F1FF 0%, #E5FFF9 100%);
+	height: 960px;
+	padding-top: 64px;
 }
 
-.loginContainer h1 {
-	font-size: 2rem;
-	margin-bottom: 2rem;
+.loginContainer {
+	display: flex;
+	width: 667px;
+	height: 624px;
+	align-items: center;
+	padding: 93px 40px 35px 40px;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 37px;
+	border-radius: 30px;
+	background: rgba(255, 255, 255, 0.90);
+	box-shadow: 0 20px 30px 0 rgba(37, 50, 61, 0.20);
+	backdrop-filter: blur(20px);
+}
+
+.loginContainer .titleContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+}
+
+.loginContainer .titleContainer .title {
+	color: #000;
+	text-align: center;
+	font-size: 40px;
+	font-weight: 700;
+	line-height: 110%;
+}
+
+.loginContainer .titleContainer .subtitle {
+	color: #1269EC;
+	text-align: center;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 146%;
 }
 
 .loginForm {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
-	width: 320px;
+	gap: 24px;
+	width: 100%;
 }
 
-.loginForm input,
-.loginForm select,
-.loginForm button {
-	font-size: 1.1rem;
+.loginFormGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.loginFormGroup label {
+	color: #1B1D1F;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 146%;
+}
+
+.buttonContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 25px;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
+.submitButton {
+	display: flex;
+	height: 67px;
+	padding: 24.99px 27.163px;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 10.865px;
+	align-self: stretch;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 146%;
+	cursor: pointer;
+	border-radius: 10px;
+	background: linear-gradient(90deg, #007BFF 0%, #3B9BFF 100%);
+	outline: none;
+	color: #FFF;
+	font-size: 19.558px;
+	font-weight: 700;
+	line-height: 146%;
+	border: none;
+	margin: 0 97px;
+	box-sizing: border-box;
+}
+
+.homeButton {
+	display: flex;
+	height: 67px;
+	padding: 24.99px 27.163px;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 10.865px;
+	align-self: stretch;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 146%;
+	cursor: pointer;
+	border-radius: 10px;
+	border: 1px solid #007BFF;
+	outline: none;
+	color: #007BFF;
+	font-size: 19.558px;
+	font-weight: 700;
+	line-height: 146%;
+	background-color: #fff;
+	margin: 0 97px;
+	box-sizing: border-box;
 }

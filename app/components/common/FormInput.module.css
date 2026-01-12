@@ -1,0 +1,26 @@
+.formInput {
+  width: 667px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #6D6C6C;
+  background: #FFF;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 146%;
+  color: #25323D;
+  padding: 0 20px 0 13px;
+  box-sizing: border-box;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.formInput:focus,
+.formInput:active {
+  border: 1.5px solid #007CFF;
+  box-shadow: 0 2px 8px 0 rgba(0, 124, 255, 0.10);
+  outline: none;
+}
+
+.formInput::placeholder {
+  color: #9EA4AA;
+  font-weight: 400;
+}
